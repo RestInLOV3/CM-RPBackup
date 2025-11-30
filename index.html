@@ -3,189 +3,35 @@
   <head>
     <meta charset="UTF-8" />
     <title>대화 백업 HTML 생성기</title>
-    <style id="dynamicStyle">
-      /* 말풍선 기본 스타일 */
-      .speech-bubble {
-        position: relative;
-        padding: 15px 20px;
-        border-radius: 20px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        line-height: 1.5;
-        display: block;
-        width: fit-content;
-        max-width: 60%;
-        word-wrap: break-word;
-        white-space: normal;
-        margin-bottom: 5px;
-        text-align: justify;
-        font-family: kopub돋움L;
-      }
-      .speech-bubble-you {
-        background: #292929;
-        color: #fff;
-        margin-left: 30px;
-      }
-      .speech-bubble-you:after {
-        content: "";
-        position: absolute;
-        left: -16px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 0;
-        height: 0;
-        border: 9px solid transparent;
-        border-right-color: #292929;
-      }
-      .speech-bubble-me {
-        background: #f0f0f0;
-        color: #333;
-        margin-left: auto;
-        margin-right: 30px;
-      }
-      .speech-bubble-me:after {
-        content: "";
-        position: absolute;
-        right: -16px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 0;
-        height: 0;
-        border: 9px solid transparent;
-        border-left-color: #f0f0f0;
-      }
-      .speech-bubble-you + .speech-bubble-me,
-      .speech-bubble-me + .speech-bubble-you {
-        margin-top: 20px;
-      }
-    </style>
-    <style>
-      body {
-        background: #f0f2f5;
-        font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
-        color: #333;
-        margin: 0;
-        padding: 20px;
-      }
-      h2 {
-        text-align: center;
-        font-size: 28px;
-        font-weight: 700;
-        margin-bottom: 20px;
-        color: #222;
-      }
-      textarea {
-        width: 100%;
-        min-height: 150px;
-        padding: 12px 15px;
-        border-radius: 12px;
-        border: 1px solid #ccc;
-        font-size: 14px;
-        resize: vertical;
-        box-sizing: border-box;
-      }
-      textarea:focus {
-        outline: none;
-        border-color: #007aff;
-        box-shadow: 0 0 8px rgba(0, 122, 255, 0.3);
-      }
-      button {
-        padding: 10px 18px;
-        border: none;
-        border-radius: 12px;
-        background-color: #007aff;
-        color: #fff;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: 0.2s;
-      }
-      button:hover {
-        background-color: #005bb5;
-      }
-      #preview {
-        padding: 15px;
-        border-radius: 12px;
-        background: #fff;
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-        min-height: 150px;
-      }
-      .color-settings {
-        display: flex;
-        gap: 15px;
-        flex-wrap: wrap;
-        margin-bottom: 15px;
-      }
-      .color-settings label {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 14px;
-      }
-      .code-container {
-        position: relative;
-        width: 100%;
-        max-width: 650px;
-      }
-      .copy-btn {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        padding: 6px 12px;
-        border: none;
-        border-radius: 8px;
-        background: #007aff;
-        color: white;
-        font-size: 12px;
-        cursor: pointer;
-        z-index: 10;
-      }
-      .copy-btn:hover {
-        background: #005bb5;
-      }
-      #output {
-        width: 100%;
-        min-height: 150px;
-        padding: 12px 15px;
-        border-radius: 12px;
-        border: 1px solid #ccc;
-        font-family: monospace;
-        font-size: 13px;
-        resize: vertical;
-        box-sizing: border-box;
-        background: #f7f7f7;
-      }
-      @media screen and (max-width: 800px) {
-        .container {
-          flex-direction: column;
-        }
-      }
-      .container {
-        display: flex;
-        gap: 100px;
-        flex-wrap: wrap;
-        padding: 20px 100px;
-      }
-      .left-panel,
-      .right-panel {
-        flex: 1;
-        min-width: 300px;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-      }
-      .meTextContainer,
-      .youTextContainer {
-        display: flex;
-        flex-direction: row;
-        gap: 8px;
-      }
-    </style>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <h2>대화 백업 HTML 생성기</h2>
     <div class="container">
       <div class="left-panel">
-        <h3>대화 입력</h3>
+        <h3>CSV 파일로 자동 생성</h3>
+        <div class="csv-upload-section">
+          <input type="file" id="csvFile" accept=".csv" />
+          <button onclick="loadCSV()">CSV 불러오기</button>
+        </div>
+
+        <div class="character-selection">
+          <label>
+            ME 캐릭터:
+            <select id="meCharacter">
+              <option value="">선택하세요</option>
+            </select>
+          </label>
+          <label>
+            YOU 캐릭터:
+            <select id="youCharacter">
+              <option value="">선택하세요</option>
+            </select>
+          </label>
+          <button onclick="generateFromCSV()">자동 생성</button>
+        </div>
+
+        <h3>수동 대화 입력</h3>
         <div class="meTextContainer">
           <textarea id="meText" placeholder="Me 대화 입력"></textarea>
           <button onclick="addBubble('me')">추가</button>
@@ -223,182 +69,6 @@
       </div>
     </div>
 
-    <script>
-      const styleBlock = `<style>
-.speech-bubble { position: relative; padding: 15px 20px; border-radius: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); line-height:1.5; display:block; width:fit-content; max-width:60%; word-wrap:break-word; white-space:normal; margin-bottom:5px; text-align:justify; font-family:kopub돋움L; }
-.speech-bubble-you { background:#292929; color:#fff; margin-left:30px; }
-.speech-bubble-you:after { content:""; position:absolute; left:-16px; top:50%; transform:translateY(-50%); width:0; height:0; border:9px solid transparent; border-right-color:#292929; }
-.speech-bubble-me { background:#f0f0f0; color:#333; margin-left:auto; margin-right:30px; }
-.speech-bubble-me:after { content:""; position:absolute; right:-16px; top:50%; transform:translateY(-50%); width:0; height:0; border:9px solid transparent; border-left-color:#f0f0f0; }
-.speech-bubble-you + .speech-bubble-me, .speech-bubble-me + .speech-bubble-you { margin-top:20px; }
-</style><br><br>`;
-
-      function updateAfterStyles() {
-        let styleTag = document.getElementById("dynamicArrowStyle");
-        if (!styleTag) {
-          styleTag = document.createElement("style");
-          styleTag.id = "dynamicArrowStyle";
-          document.head.appendChild(styleTag);
-        }
-        styleTag.innerHTML = `
-.speech-bubble-me:after {
-  content:"";
-  position:absolute;
-  right:-16px;
-  top:50%;
-  transform:translateY(-50%);
-  width:0; height:0;
-  border:9px solid transparent;
-  border-left-color: ${document.getElementById("meBg").value};
-}
-.speech-bubble-you:after {
-  content:"";
-  position:absolute;
-  left:-16px;
-  top:50%;
-  transform:translateY(-50%);
-  width:0; height:0;
-  border:9px solid transparent;
-  border-right-color: ${document.getElementById("youBg").value};
-}`;
-      }
-
-      function addBubble(who) {
-        let text = document.getElementById(who + "Text").value.trim();
-        if (!text) return;
-        let bg = document.getElementById(who + "Bg").value;
-        let color = document.getElementById(who + "Color").value;
-
-        let div = document.createElement("div");
-        div.className = "speech-bubble speech-bubble-" + who;
-        div.innerText = text;
-        div.contentEditable = true;
-        div.style.backgroundColor = bg;
-        div.style.color = color;
-        div.addEventListener("input", updateOutputFromPreview);
-
-        document.getElementById("preview").appendChild(div);
-        updateAfterStyles();
-        updateOutputFromPreview();
-        document.getElementById(who + "Text").value = "";
-      }
-
-      // Enter 키 처리
-      ["me", "you"].forEach((who) => {
-        document
-          .getElementById(who + "Text")
-          .addEventListener("keydown", (e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              addBubble(who);
-            }
-          });
-      });
-
-      function updateOutputFromPreview() {
-        const meBg = document.getElementById("meBg").value;
-        const meColor = document.getElementById("meColor").value;
-        const youBg = document.getElementById("youBg").value;
-        const youColor = document.getElementById("youColor").value;
-
-        const styleBlock = `
-<style>
-.speech-bubble {
-  position: relative;
-  padding: 15px 20px;
-  border-radius: 20px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  line-height: 1.5;
-  display: block;
-  width: fit-content;
-  max-width: 60%;
-  word-wrap: break-word;
-  white-space: normal;
-  margin-bottom: 5px;
-  text-align: justify;
-  font-family: kopub돋움L;
-}
-.speech-bubble-me {
-  background: ${meBg};
-  color: ${meColor};
-  margin-left: auto;
-  margin-right: 30px;
-}
-.speech-bubble-me:after {
-  content: "";
-  position: absolute;
-  right: -16px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0; height: 0;
-  border: 9px solid transparent;
-  border-left-color: ${meBg};
-}
-.speech-bubble-you {
-  background: ${youBg};
-  color: ${youColor};
-  margin-left: 30px;
-}
-.speech-bubble-you:after {
-  content: "";
-  position: absolute;
-  left: -16px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0; height: 0;
-  border: 9px solid transparent;
-  border-right-color: ${youBg};
-}
-.speech-bubble-you + .speech-bubble-me,
-.speech-bubble-me + .speech-bubble-you {
-  margin-top: 20px;
-}
-</style>
-<br><br>
-`;
-
-        const previewHTML = Array.from(
-          document.getElementById("preview").children
-        )
-          .map((d) => d.outerHTML)
-          .join("\n");
-
-        document.getElementById("output").value =
-          styleBlock + previewHTML + "\n";
-      }
-
-      // 색상 즉시 반영
-      ["meBg", "meColor", "youBg", "youColor"].forEach((id) => {
-        document.getElementById(id).addEventListener("input", () => {
-          Array.from(document.getElementById("preview").children).forEach(
-            (div) => {
-              if (div.classList.contains("speech-bubble-me")) {
-                div.style.backgroundColor =
-                  document.getElementById("meBg").value;
-                div.style.color = document.getElementById("meColor").value;
-              } else if (div.classList.contains("speech-bubble-you")) {
-                div.style.backgroundColor =
-                  document.getElementById("youBg").value;
-                div.style.color = document.getElementById("youColor").value;
-              }
-            }
-          );
-          updateAfterStyles();
-          updateOutputFromPreview();
-        });
-      });
-
-      // 복사
-      function copyCode() {
-        const ta = document.getElementById("output");
-        ta.select();
-        ta.setSelectionRange(0, 99999);
-        document.execCommand("copy");
-        const btn = document.querySelector(".copy-btn");
-        const original = btn.innerText;
-        btn.innerText = "복사 완료!";
-        setTimeout(() => (btn.innerText = original), 1500);
-      }
-    </script>
+    <script src="script.js"></script>
   </body>
 </html>

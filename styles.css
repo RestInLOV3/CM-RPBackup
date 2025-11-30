@@ -1,0 +1,250 @@
+/* 말풍선 기본 스타일 */
+.speech-bubble {
+  position: relative;
+  padding: 15px 20px;
+  border-radius: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  line-height: 1.5;
+  display: block;
+  width: fit-content;
+  max-width: 60%;
+  word-wrap: break-word;
+  white-space: normal;
+  margin-bottom: 5px;
+  text-align: justify;
+  font-family: kopub돋움L;
+}
+
+.speech-bubble-you {
+  background: #292929;
+  color: #fff;
+  margin-left: 30px;
+}
+
+.speech-bubble-you:after {
+  content: "";
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border: 9px solid transparent;
+  border-right-color: #292929;
+}
+
+.speech-bubble-me {
+  background: #f0f0f0;
+  color: #333;
+  margin-left: auto;
+  margin-right: 30px;
+}
+
+.speech-bubble-me:after {
+  content: "";
+  position: absolute;
+  right: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border: 9px solid transparent;
+  border-left-color: #f0f0f0;
+}
+
+.speech-bubble-you + .speech-bubble-me,
+.speech-bubble-me + .speech-bubble-you {
+  margin-top: 20px;
+}
+
+/* 페이지 전체 스타일 */
+body {
+  background: #f0f2f5;
+  font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+  color: #333;
+  margin: 0;
+  padding: 20px;
+}
+
+h2 {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #222;
+}
+
+textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 12px 15px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #007aff;
+  box-shadow: 0 0 8px rgba(0, 122, 255, 0.3);
+}
+
+button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 12px;
+  background-color: #007aff;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background-color: #005bb5;
+}
+
+#preview {
+  padding: 15px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  min-height: 150px;
+}
+
+.color-settings {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+.color-settings label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+}
+
+.code-container {
+  position: relative;
+  width: 100%;
+  max-width: 650px;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  background: #007aff;
+  color: white;
+  font-size: 12px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.copy-btn:hover {
+  background: #005bb5;
+}
+
+#output {
+  width: 100%;
+  min-height: 150px;
+  padding: 12px 15px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-family: monospace;
+  font-size: 13px;
+  resize: vertical;
+  box-sizing: border-box;
+  background: #f7f7f7;
+}
+
+@media screen and (max-width: 800px) {
+  .container {
+    flex-direction: column;
+  }
+}
+
+.container {
+  display: flex;
+  gap: 100px;
+  flex-wrap: wrap;
+  padding: 20px 100px;
+}
+
+.left-panel,
+.right-panel {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.meTextContainer,
+.youTextContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+
+/* CSV 업로드 섹션 */
+.csv-upload-section {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.csv-upload-section input[type="file"] {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  flex: 1;
+}
+
+/* 캐릭터 선택 섹션 */
+.character-selection {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.character-selection label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.character-selection select {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  min-width: 150px;
+  cursor: pointer;
+}
+
+.character-selection select:focus {
+  outline: none;
+  border-color: #007aff;
+  box-shadow: 0 0 8px rgba(0, 122, 255, 0.3);
+}
+
+.character-selection button {
+  margin-top: auto;
+}
