@@ -11,39 +11,20 @@
     <div class="container">
       <div class="left-panel">
         <h3>파일로 자동 생성</h3>
-        <div class="file-type-selection">
-          <label>
-            파일 타입:
-            <select id="fileType" onchange="updateFileInput()">
-              <option value="csv">CSV</option>
-              <option value="xlsx">XLSX</option>
-            </select>
-          </label>
-        </div>
-
         <div class="csv-upload-section">
-          <input type="file" id="dataFile" accept=".csv" />
+          <input type="file" id="dataFile" accept=".csv,.xlsx" />
           <button onclick="loadFile()">파일 불러오기</button>
-        </div>
-
-        <div class="conversation-pair-selection" id="conversationPairSection" style="display:none;">
-          <label>
-            대화 쌍 선택:
-            <select id="conversationPair">
-              <option value="">선택하세요</option>
-            </select>
-          </label>
         </div>
 
         <div class="character-selection">
           <label>
-            ME 캐릭터:
+            ME:
             <select id="meCharacter">
               <option value="">선택하세요</option>
             </select>
           </label>
           <label>
-            YOU 캐릭터:
+            YOU:
             <select id="youCharacter">
               <option value="">선택하세요</option>
             </select>

@@ -1,7 +1,8 @@
 // 데이터 저장 변수
 let csvData = [];
 let xlsxData = [];
-let conversationPairs = [];
+let conversationPairsMap = {}; // 캐릭터 이름 -> 대화 상대 목록
+let currentFileType = null; // 현재 로드된 파일 타입 ('csv' 또는 'xlsx')
 
 const styleBlock = `<style>
 .speech-bubble { position: relative; padding: 15px 20px; border-radius: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); line-height:1.5; display:block; width:fit-content; max-width:60%; word-wrap:break-word; white-space:normal; margin-bottom:5px; text-align:justify; font-family:kopub돋움L; }
@@ -12,36 +13,8 @@ const styleBlock = `<style>
 .speech-bubble-you + .speech-bubble-me, .speech-bubble-me + .speech-bubble-you { margin-top:20px; }
 </style><br><br>`;
 
-// 파일 타입에 따라 accept 속성 변경
-function updateFileInput() {
-  const fileType = document.getElementById("fileType").value;
-  const fileInput = document.getElementById("dataFile");
-
-  if (fileType === "csv") {
-    fileInput.accept = ".csv";
-  } else if (fileType === "xlsx") {
-    fileInput.accept = ".xlsx";
-  }
-
-  // 파일 선택 초기화
-  fileInput.value = "";
-
-  // 드롭다운 초기화
-  document.getElementById("conversationPair").innerHTML = '<option value="">선택하세요</option>';
-  document.getElementById("meCharacter").innerHTML = '<option value="">선택하세요</option>';
-  document.getElementById("youCharacter").innerHTML = '<option value="">선택하세요</option>';
-
-  // 대화 쌍 선택 섹션 숨기기/보이기
-  if (fileType === "xlsx") {
-    document.getElementById("conversationPairSection").style.display = "block";
-  } else {
-    document.getElementById("conversationPairSection").style.display = "none";
-  }
-}
-
-// 파일 로드 (CSV 또는 XLSX)
+// 파일 로드 (CSV 또는 XLSX 자동 감지)
 function loadFile() {
-  const fileType = document.getElementById("fileType").value;
   const fileInput = document.getElementById("dataFile");
   const file = fileInput.files[0];
 
@@ -50,10 +23,16 @@ function loadFile() {
     return;
   }
 
-  if (fileType === "csv") {
+  // 파일 확장자로 타입 감지
+  const fileName = file.name.toLowerCase();
+  if (fileName.endsWith(".csv")) {
+    currentFileType = "csv";
     loadCSV(file);
-  } else if (fileType === "xlsx") {
+  } else if (fileName.endsWith(".xlsx")) {
+    currentFileType = "xlsx";
     loadXLSX(file);
+  } else {
+    alert("지원하지 않는 파일 형식입니다. CSV 또는 XLSX 파일을 선택해주세요.");
   }
 }
 
@@ -184,17 +163,17 @@ function parseXLSX(jsonData) {
   }
 
   // 대화 쌍 추출
-  conversationPairs = extractConversationPairs(xlsxData);
+  conversationPairsMap = extractConversationPairs(xlsxData);
 
-  // 대화 쌍 드롭다운 채우기
-  populateConversationPairDropdown(conversationPairs);
+  // 캐릭터 드롭다운 채우기
+  populateInitialCharacterDropdowns();
 
   alert(`XLSX 파일을 불러왔습니다. ${xlsxData.length}개의 댓글이 있습니다.`);
 }
 
 // 대화 쌍 추출 ('ㄴ상대이름' 형식 파싱)
 function extractConversationPairs(data) {
-  const pairs = new Set();
+  const pairsMap = {};
 
   // 먼저 모든 이름 목록 추출
   const allNames = [...new Set(data.map((row) => row.name))];
@@ -220,38 +199,88 @@ function extractConversationPairs(data) {
       }
 
       if (targetName) {
-        // 쌍 생성 (정렬해서 중복 방지)
-        const pairKey = [targetName, name].sort().join("-");
-        pairs.add(pairKey);
+        // 양방향 매핑 추가
+        if (!pairsMap[targetName]) {
+          pairsMap[targetName] = new Set();
+        }
+        pairsMap[targetName].add(name);
+
+        if (!pairsMap[name]) {
+          pairsMap[name] = new Set();
+        }
+        pairsMap[name].add(targetName);
       }
     }
   }
 
-  return Array.from(pairs);
+  // Set을 배열로 변환
+  const result = {};
+  for (const [name, partnersSet] of Object.entries(pairsMap)) {
+    result[name] = Array.from(partnersSet);
+  }
+
+  return result;
 }
 
-// 대화 쌍 드롭다운 채우기
-function populateConversationPairDropdown(pairs) {
-  const pairSelect = document.getElementById("conversationPair");
-  pairSelect.innerHTML = '<option value="">선택하세요</option>';
+// XLSX용 초기 캐릭터 드롭다운 채우기
+function populateInitialCharacterDropdowns() {
+  const meSelect = document.getElementById("meCharacter");
+  const youSelect = document.getElementById("youCharacter");
 
-  pairs.forEach((pair) => {
+  // 모든 캐릭터 이름 추출
+  const allCharacters = Object.keys(conversationPairsMap).sort();
+
+  meSelect.innerHTML = '<option value="">선택하세요</option>';
+  youSelect.innerHTML = '<option value="">선택하세요</option>';
+
+  allCharacters.forEach((char) => {
+    const option1 = document.createElement("option");
+    option1.value = char;
+    option1.textContent = char;
+    meSelect.appendChild(option1);
+
+    const option2 = document.createElement("option");
+    option2.value = char;
+    option2.textContent = char;
+    youSelect.appendChild(option2);
+  });
+
+  // ME 선택 시 YOU 드롭다운 업데이트
+  meSelect.addEventListener("change", function () {
+    updatePartnerDropdown("me", this.value);
+  });
+
+  // YOU 선택 시 ME 드롭다운 업데이트
+  youSelect.addEventListener("change", function () {
+    updatePartnerDropdown("you", this.value);
+  });
+}
+
+// 상대방 드롭다운 업데이트
+function updatePartnerDropdown(changed, selectedChar) {
+  if (!selectedChar) return;
+
+  const partners = conversationPairsMap[selectedChar] || [];
+  const targetSelect =
+    changed === "me"
+      ? document.getElementById("youCharacter")
+      : document.getElementById("meCharacter");
+
+  const currentValue = targetSelect.value;
+
+  targetSelect.innerHTML = '<option value="">선택하세요</option>';
+
+  partners.forEach((partner) => {
     const option = document.createElement("option");
-    option.value = pair;
-    option.textContent = pair;
-    pairSelect.appendChild(option);
+    option.value = partner;
+    option.textContent = partner;
+    targetSelect.appendChild(option);
   });
 
-  // 대화 쌍 선택 시 캐릭터 드롭다운 업데이트
-  pairSelect.addEventListener("change", function () {
-    const selectedPair = this.value;
-    if (selectedPair) {
-      const characters = selectedPair.split("-");
-      populateCharacterDropdowns(characters);
-    } else {
-      populateCharacterDropdowns([]);
-    }
-  });
+  // 이전 선택값이 새 목록에 있으면 유지
+  if (partners.includes(currentValue)) {
+    targetSelect.value = currentValue;
+  }
 }
 
 // 드롭다운에 캐릭터 이름 추가
@@ -276,13 +305,16 @@ function populateCharacterDropdowns(characters) {
   });
 }
 
-// 데이터로 자동 생성 (CSV 또는 XLSX)
+// 데이터로 자동 생성 (CSV 또는 XLSX 자동 감지)
 function generateFromData() {
-  const fileType = document.getElementById("fileType").value;
+  if (!currentFileType) {
+    alert("먼저 파일을 불러와주세요.");
+    return;
+  }
 
-  if (fileType === "csv") {
+  if (currentFileType === "csv") {
     generateFromCSV();
-  } else if (fileType === "xlsx") {
+  } else if (currentFileType === "xlsx") {
     generateFromXLSX();
   }
 }
@@ -343,15 +375,9 @@ function generateFromCSV() {
 function generateFromXLSX() {
   const meChar = document.getElementById("meCharacter").value;
   const youChar = document.getElementById("youCharacter").value;
-  const selectedPair = document.getElementById("conversationPair").value;
 
   if (!meChar || !youChar) {
     alert("ME와 YOU 캐릭터를 모두 선택해주세요.");
-    return;
-  }
-
-  if (!selectedPair) {
-    alert("대화 쌍을 선택해주세요.");
     return;
   }
 
@@ -363,8 +389,8 @@ function generateFromXLSX() {
   // 기존 미리보기 초기화
   document.getElementById("preview").innerHTML = "";
 
-  // 선택된 대화 쌍에 해당하는 데이터만 필터링
-  const pairCharacters = selectedPair.split("-");
+  // 선택된 캐릭터 쌍
+  const pairCharacters = [meChar, youChar];
 
   // 먼저 모든 이름 목록 추출
   const allNames = [...new Set(xlsxData.map((row) => row.name))];
