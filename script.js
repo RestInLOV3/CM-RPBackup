@@ -32,11 +32,11 @@ function loadFile() {
   } else if (fileName.endsWith(".xlsx")) {
     currentFileType = "xlsx";
     loadXLSX(file);
-  } else if (fileName.endsWith(".txt")) {
+  } else if (fileName.endsWith(".txt") || fileName.endsWith(".eml")) {
     currentFileType = "txt";
     loadTXT(file);
   } else {
-    alert("지원하지 않는 파일 형식입니다. CSV, XLSX, TXT 파일을 선택해주세요.");
+    alert("지원하지 않는 파일 형식입니다. CSV, XLSX, TXT, EML 파일을 선택해주세요.");
   }
 }
 
@@ -141,11 +141,19 @@ function parseCSV(text) {
     csvData.push(row);
   }
 
-  // 캐릭터 이름 추출 및 드롭다운 채우기
+  // 캐릭터 이름 추출
   const characters = [...new Set(csvData.map((row) => row.username))].filter(
     (char) => char && char.trim() !== ""
   );
-  populateCharacterDropdowns(characters);
+
+  // 모든 캐릭터가 서로 대화할 수 있도록 전체 매핑 생성
+  conversationPairsMap = {};
+  for (const char of characters) {
+    conversationPairsMap[char] = characters.filter((c) => c !== char);
+  }
+
+  // 캐릭터 드롭다운 채우기
+  populateInitialCharacterDropdowns();
 
   alert(`CSV 파일을 불러왔습니다. ${csvData.length}개의 대화가 있습니다.`);
 }
@@ -196,17 +204,69 @@ function parseTXT(text) {
 
   txtData = [];
   let currentMessage = null;
+  let hasOperationPolicy = false;
+  let startParsing = false;
+
+  // 먼저 '운영정책 보기'가 있는지 확인
+  for (const line of lines) {
+    if (line.includes("운영정책 보기")) {
+      hasOperationPolicy = true;
+      break;
+    }
+  }
 
   for (const line of lines) {
-    // URL 라인은 스킵
-    if (line.startsWith("http://") || line.startsWith("https://")) {
+    const trimmedLine = line.trim();
+
+    // 빈 줄은 스킵
+    if (trimmedLine === "") {
       continue;
     }
 
-    // 날짜 패턴 매칭: 2025년 3월 25일 오전 9:09:닉네임:내용
-    const match = line.match(/^\d+년 \d+월 \d+일 (오전|오후) \d+:\d+:(.*)$/);
+    // URL 라인은 스킵
+    if (trimmedLine.startsWith("http://") || trimmedLine.startsWith("https://")) {
+      continue;
+    }
 
-    if (match) {
+    // '운영정책 보기' 이후부터 파싱 시작 (카카오톡 .eml/.txt 형식)
+    if (trimmedLine.includes("운영정책 보기")) {
+      startParsing = true;
+      continue;
+    }
+
+    // 카카오톡 대화 헤더 부분은 무시
+    if (hasOperationPolicy && !startParsing) {
+      if (trimmedLine.includes("님과 카카오톡 대화") ||
+          trimmedLine.includes("저장한 날짜") ||
+          trimmedLine.includes("타인, 기관 등의 사칭") ||
+          trimmedLine.includes("운영정책을 위반한")) {
+        continue;
+      }
+    }
+
+    // 날짜 구분선: 2024년 12월 9일 오전 12:39 (메시지 없음)
+    const dateSeparatorMatch = trimmedLine.match(/^\d+년 \d+월 \d+일\s+(오전|오후)\s+\d+:\d+$/);
+    if (dateSeparatorMatch) {
+      continue; // 날짜 구분선은 무시
+    }
+
+    // 시스템 메시지 필터링
+    if (trimmedLine.includes("채팅방 관리자가") ||
+        trimmedLine.includes("님이 들어왔습니다") ||
+        trimmedLine.includes("님이 나갔습니다") ||
+        trimmedLine.includes("내보냈습니다") ||
+        trimmedLine.includes("초대했습니다") ||
+        trimmedLine.includes("삭제된 메시지입니다")) {
+      continue; // 시스템 메시지는 무시
+    }
+
+    // 새 형식: 2024년 8월 28일 오전 12:06, 릴 : 좋은 저녁이에요
+    const newFormatMatch = trimmedLine.match(/^\d+년 \d+월 \d+일\s+(오전|오후)\s+\d+:\d+,\s*(.+?)\s*:\s*(.*)$/);
+
+    // 기존 형식: 2025년 3월 25일 오전 9:09:닉네임:내용
+    const oldFormatMatch = trimmedLine.match(/^\d+년 \d+월 \d+일\s+(오전|오후)\s+\d+:\d+:(.*)$/);
+
+    if (newFormatMatch) {
       // 이전 메시지가 있으면 저장
       if (currentMessage && currentMessage.username && currentMessage.message) {
         txtData.push({
@@ -215,8 +275,23 @@ function parseTXT(text) {
         });
       }
 
-      // 새 메시지 시작
-      const rest = match[2]; // "닉네임:내용"
+      // 새 메시지 시작 (새 형식)
+      const username = newFormatMatch[2].trim();
+      const message = newFormatMatch[3].trim();
+
+      currentMessage = { username, message };
+    } else if (oldFormatMatch && !hasOperationPolicy) {
+      // 기존 형식은 '운영정책 보기'가 없는 파일에서만
+      // 이전 메시지가 있으면 저장
+      if (currentMessage && currentMessage.username && currentMessage.message) {
+        txtData.push({
+          username: currentMessage.username,
+          message: currentMessage.message.trim(),
+        });
+      }
+
+      // 새 메시지 시작 (기존 형식)
+      const rest = oldFormatMatch[2]; // "닉네임:내용"
       const colonIndex = rest.indexOf(":");
 
       if (colonIndex !== -1) {
@@ -229,8 +304,8 @@ function parseTXT(text) {
       }
     } else {
       // 날짜 패턴이 없으면 이전 메시지에 추가 (줄바꿈 포함)
-      if (currentMessage && line.trim() !== "") {
-        currentMessage.message += "\n" + line;
+      if (currentMessage && trimmedLine !== "") {
+        currentMessage.message += "\n" + trimmedLine;
       }
     }
   }
@@ -243,11 +318,19 @@ function parseTXT(text) {
     });
   }
 
-  // 캐릭터 이름 추출 및 드롭다운 채우기
+  // 캐릭터 이름 추출
   const characters = [...new Set(txtData.map((row) => row.username))].filter(
     (char) => char && char.trim() !== ""
   );
-  populateCharacterDropdowns(characters);
+
+  // 모든 캐릭터가 서로 대화할 수 있도록 전체 매핑 생성
+  conversationPairsMap = {};
+  for (const char of characters) {
+    conversationPairsMap[char] = characters.filter((c) => c !== char);
+  }
+
+  // 캐릭터 드롭다운 채우기
+  populateInitialCharacterDropdowns();
 
   alert(`TXT 파일을 불러왔습니다. ${txtData.length}개의 대화가 있습니다.`);
 }
@@ -369,20 +452,31 @@ function populateCharacterDropdowns(characters) {
   const meSelect = document.getElementById("meCharacter");
   const youSelect = document.getElementById("youCharacter");
 
+  // 이벤트 리스너 제거를 위해 요소 복제
+  const newMeSelect = meSelect.cloneNode(false);
+  const newYouSelect = youSelect.cloneNode(false);
+
+  meSelect.parentNode.replaceChild(newMeSelect, meSelect);
+  youSelect.parentNode.replaceChild(newYouSelect, youSelect);
+
   // 기존 옵션 제거 (첫 번째 "선택하세요" 제외)
-  meSelect.innerHTML = '<option value="">선택하세요</option>';
-  youSelect.innerHTML = '<option value="">선택하세요</option>';
+  newMeSelect.innerHTML = '<option value="">선택하세요</option>';
+  newYouSelect.innerHTML = '<option value="">선택하세요</option>';
+
+  // ID 유지
+  newMeSelect.id = "meCharacter";
+  newYouSelect.id = "youCharacter";
 
   characters.forEach((char) => {
     const option1 = document.createElement("option");
     option1.value = char;
     option1.textContent = char;
-    meSelect.appendChild(option1);
+    newMeSelect.appendChild(option1);
 
     const option2 = document.createElement("option");
     option2.value = char;
     option2.textContent = char;
-    youSelect.appendChild(option2);
+    newYouSelect.appendChild(option2);
   });
 }
 
