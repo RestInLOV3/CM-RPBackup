@@ -1,8 +1,9 @@
 // 데이터 저장 변수
 let csvData = [];
 let xlsxData = [];
+let txtData = [];
 let conversationPairsMap = {}; // 캐릭터 이름 -> 대화 상대 목록
-let currentFileType = null; // 현재 로드된 파일 타입 ('csv' 또는 'xlsx')
+let currentFileType = null; // 현재 로드된 파일 타입 ('csv', 'xlsx', 'txt')
 
 const styleBlock = `<style>
 .speech-bubble { position: relative; padding: 15px 20px; border-radius: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); line-height:1.5; display:block; width:fit-content; max-width:60%; word-wrap:break-word; white-space:normal; margin-bottom:5px; text-align:justify; font-family:kopub돋움L; }
@@ -13,7 +14,7 @@ const styleBlock = `<style>
 .speech-bubble-you + .speech-bubble-me, .speech-bubble-me + .speech-bubble-you { margin-top:20px; }
 </style><br><br>`;
 
-// 파일 로드 (CSV 또는 XLSX 자동 감지)
+// 파일 로드 (CSV, XLSX, TXT 자동 감지)
 function loadFile() {
   const fileInput = document.getElementById("dataFile");
   const file = fileInput.files[0];
@@ -31,8 +32,11 @@ function loadFile() {
   } else if (fileName.endsWith(".xlsx")) {
     currentFileType = "xlsx";
     loadXLSX(file);
+  } else if (fileName.endsWith(".txt")) {
+    currentFileType = "txt";
+    loadTXT(file);
   } else {
-    alert("지원하지 않는 파일 형식입니다. CSV 또는 XLSX 파일을 선택해주세요.");
+    alert("지원하지 않는 파일 형식입니다. CSV, XLSX, TXT 파일을 선택해주세요.");
   }
 }
 
@@ -62,6 +66,16 @@ function loadXLSX(file) {
     parseXLSX(jsonData);
   };
   reader.readAsArrayBuffer(file);
+}
+
+// TXT 파일 로드 및 파싱
+function loadTXT(file) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const text = e.target.result;
+    parseTXT(text);
+  };
+  reader.readAsText(file, "UTF-8");
 }
 
 // CSV 한 줄 파싱 (따옴표 처리 포함)
@@ -169,6 +183,73 @@ function parseXLSX(jsonData) {
   populateInitialCharacterDropdowns();
 
   alert(`XLSX 파일을 불러왔습니다. ${xlsxData.length}개의 댓글이 있습니다.`);
+}
+
+// TXT 파싱
+function parseTXT(text) {
+  const lines = text.split("\n");
+
+  if (lines.length === 0) {
+    alert("TXT 파일이 비어있습니다.");
+    return;
+  }
+
+  txtData = [];
+  let currentMessage = null;
+
+  for (const line of lines) {
+    // URL 라인은 스킵
+    if (line.startsWith("http://") || line.startsWith("https://")) {
+      continue;
+    }
+
+    // 날짜 패턴 매칭: 2025년 3월 25일 오전 9:09:닉네임:내용
+    const match = line.match(/^\d+년 \d+월 \d+일 (오전|오후) \d+:\d+:(.*)$/);
+
+    if (match) {
+      // 이전 메시지가 있으면 저장
+      if (currentMessage && currentMessage.username && currentMessage.message) {
+        txtData.push({
+          username: currentMessage.username,
+          message: currentMessage.message.trim(),
+        });
+      }
+
+      // 새 메시지 시작
+      const rest = match[2]; // "닉네임:내용"
+      const colonIndex = rest.indexOf(":");
+
+      if (colonIndex !== -1) {
+        const username = rest.substring(0, colonIndex).trim();
+        const message = rest.substring(colonIndex + 1).trim();
+
+        currentMessage = { username, message };
+      } else {
+        currentMessage = null;
+      }
+    } else {
+      // 날짜 패턴이 없으면 이전 메시지에 추가 (줄바꿈 포함)
+      if (currentMessage && line.trim() !== "") {
+        currentMessage.message += "\n" + line;
+      }
+    }
+  }
+
+  // 마지막 메시지 저장
+  if (currentMessage && currentMessage.username && currentMessage.message) {
+    txtData.push({
+      username: currentMessage.username,
+      message: currentMessage.message.trim(),
+    });
+  }
+
+  // 캐릭터 이름 추출 및 드롭다운 채우기
+  const characters = [...new Set(txtData.map((row) => row.username))].filter(
+    (char) => char && char.trim() !== ""
+  );
+  populateCharacterDropdowns(characters);
+
+  alert(`TXT 파일을 불러왔습니다. ${txtData.length}개의 대화가 있습니다.`);
 }
 
 // 대화 쌍 추출 ('ㄴ상대이름' 형식 파싱)
@@ -305,7 +386,7 @@ function populateCharacterDropdowns(characters) {
   });
 }
 
-// 데이터로 자동 생성 (CSV 또는 XLSX 자동 감지)
+// 데이터로 자동 생성 (CSV, XLSX, TXT 자동 감지)
 function generateFromData() {
   if (!currentFileType) {
     alert("먼저 파일을 불러와주세요.");
@@ -316,6 +397,8 @@ function generateFromData() {
     generateFromCSV();
   } else if (currentFileType === "xlsx") {
     generateFromXLSX();
+  } else if (currentFileType === "txt") {
+    generateFromTXT();
   }
 }
 
@@ -339,6 +422,58 @@ function generateFromCSV() {
 
   // CSV 데이터 순서대로 말풍선 생성
   csvData.forEach((row) => {
+    const username = row.username;
+    const message = row.message;
+
+    if (!username || !message) return;
+
+    let who = "";
+    if (username === meChar) {
+      who = "me";
+    } else if (username === youChar) {
+      who = "you";
+    } else {
+      return; // 선택된 캐릭터가 아니면 스킵
+    }
+
+    const bg = document.getElementById(who + "Bg").value;
+    const color = document.getElementById(who + "Color").value;
+
+    const div = document.createElement("div");
+    div.className = "speech-bubble speech-bubble-" + who;
+    div.innerText = message;
+    div.contentEditable = true;
+    div.style.backgroundColor = bg;
+    div.style.color = color;
+    div.addEventListener("input", updateOutputFromPreview);
+
+    document.getElementById("preview").appendChild(div);
+  });
+
+  updateAfterStyles();
+  updateOutputFromPreview();
+}
+
+// TXT 데이터로 자동 생성
+function generateFromTXT() {
+  const meChar = document.getElementById("meCharacter").value;
+  const youChar = document.getElementById("youCharacter").value;
+
+  if (!meChar || !youChar) {
+    alert("ME와 YOU 캐릭터를 모두 선택해주세요.");
+    return;
+  }
+
+  if (txtData.length === 0) {
+    alert("먼저 TXT 파일을 불러와주세요.");
+    return;
+  }
+
+  // 기존 미리보기 초기화
+  document.getElementById("preview").innerHTML = "";
+
+  // TXT 데이터 순서대로 말풍선 생성
+  txtData.forEach((row) => {
     const username = row.username;
     const message = row.message;
 
