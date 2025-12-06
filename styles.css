@@ -216,7 +216,7 @@ button:hover {
 .character-selection {
   display: flex;
   gap: 15px;
-  align-items: center;
+  align-items: top;
   margin-bottom: 20px;
   flex-wrap: wrap;
 }

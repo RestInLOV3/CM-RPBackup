@@ -15,8 +15,8 @@ function populateInitialCharacterDropdowns() {
     meColorDiv.style.gap = "5px";
     meColorDiv.style.marginTop = "5px";
     meColorDiv.innerHTML = `
-      <label style="margin: 0; font-size: 12px;">ME 배경: <input type="color" id="meBg_auto" value="#f0f0f0" style="width: 40px; height: 25px;" /></label>
-      <label style="margin: 0; font-size: 12px;">ME 글자: <input type="color" id="meColor_auto" value="#333333" style="width: 40px; height: 25px;" /></label>
+      <label style="margin: 0; font-size: 12px;">배경: <input type="color" id="meBg_auto" value="#f0f0f0" style="width: 40px; height: 25px;" /></label>
+      <label style="margin: 0; font-size: 12px;">글자: <input type="color" id="meColor_auto" value="#333333" style="width: 40px; height: 25px;" /></label>
     `;
     meContainer.appendChild(meColorDiv);
   }
