@@ -160,13 +160,29 @@ function addYouCharacter() {
     return;
   }
 
-  const availablePartners = AppState.conversationPairsMap[meChar] || [];
+  // 이미 선택된 모든 YOU 캐릭터 가져오기
+  const selectedYouChars = getAllYouCharacters();
 
-  // ME를 제외한 최대 인원 수 체크
-  if (AppState.youCount >= availablePartners.length) {
-    alert(
-      `최대 ${availablePartners.length}명의 대화 상대까지만 추가할 수 있습니다.`
+  // 새로운 YOU로 추가 가능한 캐릭터 계산
+  // 조건: ME의 파트너이면서, 이미 선택된 모든 YOU들의 파트너여야 함
+  let availablePartners = AppState.conversationPairsMap[meChar] || [];
+
+  // 이미 선택된 YOU들과 모두 연결되어 있는 파트너만 필터링
+  for (const youChar of selectedYouChars) {
+    const youPartners = AppState.conversationPairsMap[youChar] || [];
+    availablePartners = availablePartners.filter((partner) =>
+      youPartners.includes(partner)
     );
+  }
+
+  // 이미 선택된 캐릭터 제외
+  availablePartners = availablePartners.filter(
+    (partner) => !selectedYouChars.includes(partner)
+  );
+
+  // 추가 가능한 파트너가 없으면 알림
+  if (availablePartners.length === 0) {
+    alert("추가할 수 있는 대화 상대가 없습니다.");
     return;
   }
 
@@ -208,10 +224,8 @@ function addYouCharacter() {
     color: defaultColor.color,
   };
 
-  // 새로운 드롭다운에 옵션 추가
-  const newSelect = document.getElementById(
-    `youCharacter${AppState.youCount}`
-  );
+  // 새로운 드롭다운에 옵션 추가 (완전 연결된 파트너만)
+  const newSelect = document.getElementById(`youCharacter${AppState.youCount}`);
   availablePartners.forEach((partner) => {
     const option = document.createElement("option");
     option.value = partner;
