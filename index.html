@@ -23,12 +23,15 @@
               <option value="">선택하세요</option>
             </select>
           </label>
-          <label>
-            YOU:
-            <select id="youCharacter">
-              <option value="">선택하세요</option>
-            </select>
-          </label>
+          <div id="youCharactersContainer">
+            <label>
+              YOU:
+              <select id="youCharacter">
+                <option value="">선택하세요</option>
+              </select>
+            </label>
+          </div>
+          <button id="addYouBtn" onclick="addYouCharacter()" style="margin-left: 5px;">+</button>
           <button onclick="generateFromData()">자동 생성</button>
         </div>
 

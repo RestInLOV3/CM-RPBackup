@@ -4,6 +4,9 @@ let xlsxData = [];
 let txtData = [];
 let conversationPairsMap = {}; // 캐릭터 이름 -> 대화 상대 목록
 let currentFileType = null; // 현재 로드된 파일 타입 ('csv', 'xlsx', 'txt')
+let youCount = 1; // YOU 캐릭터 개수 (1부터 시작)
+let maxCharacters = 0; // 최대 캐릭터 수 (파일 로드 시 설정)
+let youColors = {}; // YOU별 색상 저장 { youCharacter: {bg: '#...', color: '#...'}, ... }
 
 const styleBlock = `<style>
 .speech-bubble { position: relative; padding: 15px 20px; border-radius: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); line-height:1.5; display:block; width:fit-content; max-width:60%; word-wrap:break-word; white-space:normal; margin-bottom:5px; text-align:justify; font-family:kopub돋움L; }
@@ -36,7 +39,9 @@ function loadFile() {
     currentFileType = "txt";
     loadTXT(file);
   } else {
-    alert("지원하지 않는 파일 형식입니다. CSV, XLSX, TXT, EML 파일을 선택해주세요.");
+    alert(
+      "지원하지 않는 파일 형식입니다. CSV, XLSX, TXT, EML 파일을 선택해주세요."
+    );
   }
 }
 
@@ -224,7 +229,10 @@ function parseTXT(text) {
     }
 
     // URL 라인은 스킵
-    if (trimmedLine.startsWith("http://") || trimmedLine.startsWith("https://")) {
+    if (
+      trimmedLine.startsWith("http://") ||
+      trimmedLine.startsWith("https://")
+    ) {
       continue;
     }
 
@@ -236,35 +244,45 @@ function parseTXT(text) {
 
     // 카카오톡 대화 헤더 부분은 무시
     if (hasOperationPolicy && !startParsing) {
-      if (trimmedLine.includes("님과 카카오톡 대화") ||
-          trimmedLine.includes("저장한 날짜") ||
-          trimmedLine.includes("타인, 기관 등의 사칭") ||
-          trimmedLine.includes("운영정책을 위반한")) {
+      if (
+        trimmedLine.includes("님과 카카오톡 대화") ||
+        trimmedLine.includes("저장한 날짜") ||
+        trimmedLine.includes("타인, 기관 등의 사칭") ||
+        trimmedLine.includes("운영정책을 위반한")
+      ) {
         continue;
       }
     }
 
     // 날짜 구분선: 2024년 12월 9일 오전 12:39 (메시지 없음)
-    const dateSeparatorMatch = trimmedLine.match(/^\d+년 \d+월 \d+일\s+(오전|오후)\s+\d+:\d+$/);
+    const dateSeparatorMatch = trimmedLine.match(
+      /^\d+년 \d+월 \d+일\s+(오전|오후)\s+\d+:\d+$/
+    );
     if (dateSeparatorMatch) {
       continue; // 날짜 구분선은 무시
     }
 
     // 시스템 메시지 필터링
-    if (trimmedLine.includes("채팅방 관리자가") ||
-        trimmedLine.includes("님이 들어왔습니다") ||
-        trimmedLine.includes("님이 나갔습니다") ||
-        trimmedLine.includes("내보냈습니다") ||
-        trimmedLine.includes("초대했습니다") ||
-        trimmedLine.includes("삭제된 메시지입니다")) {
+    if (
+      trimmedLine.includes("채팅방 관리자가") ||
+      trimmedLine.includes("님이 들어왔습니다") ||
+      trimmedLine.includes("님이 나갔습니다") ||
+      trimmedLine.includes("내보냈습니다") ||
+      trimmedLine.includes("초대했습니다") ||
+      trimmedLine.includes("삭제된 메시지입니다")
+    ) {
       continue; // 시스템 메시지는 무시
     }
 
     // 새 형식: 2024년 8월 28일 오전 12:06, 릴 : 좋은 저녁이에요
-    const newFormatMatch = trimmedLine.match(/^\d+년 \d+월 \d+일\s+(오전|오후)\s+\d+:\d+,\s*(.+?)\s*:\s*(.*)$/);
+    const newFormatMatch = trimmedLine.match(
+      /^\d+년 \d+월 \d+일\s+(오전|오후)\s+\d+:\d+,\s*(.+?)\s*:\s*(.*)$/
+    );
 
     // 기존 형식: 2025년 3월 25일 오전 9:09:닉네임:내용
-    const oldFormatMatch = trimmedLine.match(/^\d+년 \d+월 \d+일\s+(오전|오후)\s+\d+:\d+:(.*)$/);
+    const oldFormatMatch = trimmedLine.match(
+      /^\d+년 \d+월 \d+일\s+(오전|오후)\s+\d+:\d+:(.*)$/
+    );
 
     if (newFormatMatch) {
       // 이전 메시지가 있으면 저장
@@ -388,6 +406,45 @@ function extractConversationPairs(data) {
 
 // XLSX용 초기 캐릭터 드롭다운 채우기
 function populateInitialCharacterDropdowns() {
+  // YOU 카운터 초기화
+  youCount = 1;
+
+  // ME 색상 입력 필드 추가 (기존에 없으면)
+  const meCharacterSelect = document.getElementById("meCharacter");
+  const meContainer = meCharacterSelect.parentElement;
+
+  // 기존 색상 입력 필드가 없으면 추가
+  if (!document.getElementById("meBg_auto")) {
+    const meColorDiv = document.createElement("div");
+    meColorDiv.style.display = "flex";
+    meColorDiv.style.alignItems = "center";
+    meColorDiv.style.gap = "5px";
+    meColorDiv.style.marginTop = "5px";
+    meColorDiv.innerHTML = `
+      <label style="margin: 0; font-size: 12px;">ME 배경: <input type="color" id="meBg_auto" value="#f0f0f0" style="width: 40px; height: 25px;" /></label>
+      <label style="margin: 0; font-size: 12px;">ME 글자: <input type="color" id="meColor_auto" value="#333333" style="width: 40px; height: 25px;" /></label>
+    `;
+    meContainer.appendChild(meColorDiv);
+  }
+
+  // YOU 컨테이너 초기화
+  const container = document.getElementById("youCharactersContainer");
+  container.innerHTML = `<div style="display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+    <label style="margin: 0;">
+      YOU:
+      <select id="youCharacter">
+        <option value="">선택하세요</option>
+      </select>
+    </label>
+    <label style="margin: 0; font-size: 12px;">배경: <input type="color" id="youBg_youCharacter" value="#292929" style="width: 40px; height: 25px;" /></label>
+    <label style="margin: 0; font-size: 12px;">글자: <input type="color" id="youColor_youCharacter" value="#ffffff" style="width: 40px; height: 25px;" /></label>
+  </div>`;
+
+  // 초기 YOU 색상 저장
+  youColors = {
+    youCharacter: { bg: "#292929", color: "#ffffff" },
+  };
+
   const meSelect = document.getElementById("meCharacter");
   const youSelect = document.getElementById("youCharacter");
 
@@ -409,15 +466,30 @@ function populateInitialCharacterDropdowns() {
     youSelect.appendChild(option2);
   });
 
+  // 기존 이벤트 리스너 제거를 위해 복제
+  const newMeSelect = meSelect.cloneNode(true);
+  const newYouSelect = youSelect.cloneNode(true);
+  meSelect.parentNode.replaceChild(newMeSelect, meSelect);
+  youSelect.parentNode.replaceChild(newYouSelect, youSelect);
+
   // ME 선택 시 YOU 드롭다운 업데이트
-  meSelect.addEventListener("change", function () {
-    updatePartnerDropdown("me", this.value);
-  });
+  document
+    .getElementById("meCharacter")
+    .addEventListener("change", function () {
+      updatePartnerDropdown("me", this.value);
+      updateAllDropdowns();
+    });
 
   // YOU 선택 시 ME 드롭다운 업데이트
-  youSelect.addEventListener("change", function () {
-    updatePartnerDropdown("you", this.value);
-  });
+  document
+    .getElementById("youCharacter")
+    .addEventListener("change", function () {
+      updatePartnerDropdown("you", this.value);
+      updateAllDropdowns();
+    });
+
+  // 자동 생성 색상 입력 필드에 이벤트 리스너 추가
+  attachAutoColorListeners();
 }
 
 // 상대방 드롭다운 업데이트
@@ -499,10 +571,10 @@ function generateFromData() {
 // CSV 데이터로 자동 생성
 function generateFromCSV() {
   const meChar = document.getElementById("meCharacter").value;
-  const youChar = document.getElementById("youCharacter").value;
+  const youChars = getAllYouCharacters();
 
-  if (!meChar || !youChar) {
-    alert("ME와 YOU 캐릭터를 모두 선택해주세요.");
+  if (!meChar || youChars.length === 0) {
+    alert("ME와 최소 1명의 YOU 캐릭터를 선택해주세요.");
     return;
   }
 
@@ -521,24 +593,38 @@ function generateFromCSV() {
 
     if (!username || !message) return;
 
-    let who = "";
+    let bg, color;
+    let classSuffix = "";
+
     if (username === meChar) {
-      who = "me";
-    } else if (username === youChar) {
-      who = "you";
+      const meColors = getMeColors();
+      bg = meColors.bg;
+      color = meColors.color;
+      classSuffix = "me-auto"; // 자동 생성 ME는 별도 클래스
+    } else if (youChars.includes(username)) {
+      // username으로 YOU ID 찾아서 해당 색상 가져오기
+      const youId = getYouIdByUsername(username);
+      if (youId) {
+        const colors = getYouColors(youId);
+        bg = colors.bg;
+        color = colors.color;
+        classSuffix = getYouClassSuffix(youId);
+      } else {
+        bg = "#292929";
+        color = "#ffffff";
+        classSuffix = "you";
+      }
     } else {
       return; // 선택된 캐릭터가 아니면 스킵
     }
 
-    const bg = document.getElementById(who + "Bg").value;
-    const color = document.getElementById(who + "Color").value;
-
     const div = document.createElement("div");
-    div.className = "speech-bubble speech-bubble-" + who;
+    div.className = "speech-bubble speech-bubble-" + classSuffix;
     div.innerText = message;
     div.contentEditable = true;
     div.style.backgroundColor = bg;
     div.style.color = color;
+    div.dataset.source = "auto"; // 자동 생성 표시
     div.addEventListener("input", updateOutputFromPreview);
 
     document.getElementById("preview").appendChild(div);
@@ -551,10 +637,10 @@ function generateFromCSV() {
 // TXT 데이터로 자동 생성
 function generateFromTXT() {
   const meChar = document.getElementById("meCharacter").value;
-  const youChar = document.getElementById("youCharacter").value;
+  const youChars = getAllYouCharacters();
 
-  if (!meChar || !youChar) {
-    alert("ME와 YOU 캐릭터를 모두 선택해주세요.");
+  if (!meChar || youChars.length === 0) {
+    alert("ME와 최소 1명의 YOU 캐릭터를 선택해주세요.");
     return;
   }
 
@@ -573,24 +659,38 @@ function generateFromTXT() {
 
     if (!username || !message) return;
 
-    let who = "";
+    let bg, color;
+    let classSuffix = "";
+
     if (username === meChar) {
-      who = "me";
-    } else if (username === youChar) {
-      who = "you";
+      const meColors = getMeColors();
+      bg = meColors.bg;
+      color = meColors.color;
+      classSuffix = "me-auto"; // 자동 생성 ME는 별도 클래스
+    } else if (youChars.includes(username)) {
+      // username으로 YOU ID 찾아서 해당 색상 가져오기
+      const youId = getYouIdByUsername(username);
+      if (youId) {
+        const colors = getYouColors(youId);
+        bg = colors.bg;
+        color = colors.color;
+        classSuffix = getYouClassSuffix(youId);
+      } else {
+        bg = "#292929";
+        color = "#ffffff";
+        classSuffix = "you";
+      }
     } else {
       return; // 선택된 캐릭터가 아니면 스킵
     }
 
-    const bg = document.getElementById(who + "Bg").value;
-    const color = document.getElementById(who + "Color").value;
-
     const div = document.createElement("div");
-    div.className = "speech-bubble speech-bubble-" + who;
+    div.className = "speech-bubble speech-bubble-" + classSuffix;
     div.innerText = message;
     div.contentEditable = true;
     div.style.backgroundColor = bg;
     div.style.color = color;
+    div.dataset.source = "auto"; // 자동 생성 표시
     div.addEventListener("input", updateOutputFromPreview);
 
     document.getElementById("preview").appendChild(div);
@@ -603,10 +703,10 @@ function generateFromTXT() {
 // XLSX 데이터로 자동 생성
 function generateFromXLSX() {
   const meChar = document.getElementById("meCharacter").value;
-  const youChar = document.getElementById("youCharacter").value;
+  const youChars = getAllYouCharacters();
 
-  if (!meChar || !youChar) {
-    alert("ME와 YOU 캐릭터를 모두 선택해주세요.");
+  if (!meChar || youChars.length === 0) {
+    alert("ME와 최소 1명의 YOU 캐릭터를 선택해주세요.");
     return;
   }
 
@@ -619,7 +719,7 @@ function generateFromXLSX() {
   document.getElementById("preview").innerHTML = "";
 
   // 선택된 캐릭터 쌍
-  const pairCharacters = [meChar, youChar];
+  const pairCharacters = [meChar, ...youChars];
 
   // 먼저 모든 이름 목록 추출
   const allNames = [...new Set(xlsxData.map((row) => row.name))];
@@ -650,13 +750,19 @@ function generateFromXLSX() {
         if (contentAfterMarker.startsWith(candidateName)) {
           targetName = candidateName;
           // 이름 이후의 실제 내용 추출 (이름 다음의 공백 포함 제거)
-          actualContent = contentAfterMarker.substring(candidateName.length).trim();
+          actualContent = contentAfterMarker
+            .substring(candidateName.length)
+            .trim();
           break;
         }
       }
 
       // 현재 대화에 reply 추가
-      if (currentConversation && targetName && pairCharacters.includes(targetName)) {
+      if (
+        currentConversation &&
+        targetName &&
+        pairCharacters.includes(targetName)
+      ) {
         currentConversation.replies.push({
           name: name,
           content: actualContent,
@@ -679,12 +785,12 @@ function generateFromXLSX() {
     let who = "";
     if (conv.name === meChar) {
       who = "me";
-    } else if (conv.name === youChar) {
+    } else if (youChars.includes(conv.name)) {
       who = "you";
     }
 
     if (who) {
-      addBubbleToPreview(who, conv.content);
+      addBubbleToPreview(who, conv.content, conv.name, meChar);
     }
 
     // 답글들
@@ -692,12 +798,12 @@ function generateFromXLSX() {
       let replyWho = "";
       if (reply.name === meChar) {
         replyWho = "me";
-      } else if (reply.name === youChar) {
+      } else if (youChars.includes(reply.name)) {
         replyWho = "you";
       }
 
       if (replyWho) {
-        addBubbleToPreview(replyWho, reply.content);
+        addBubbleToPreview(replyWho, reply.content, reply.name, meChar);
       }
     });
   });
@@ -707,16 +813,37 @@ function generateFromXLSX() {
 }
 
 // 미리보기에 말풍선 추가 (헬퍼 함수)
-function addBubbleToPreview(who, text) {
-  const bg = document.getElementById(who + "Bg").value;
-  const color = document.getElementById(who + "Color").value;
+function addBubbleToPreview(who, text, username, meChar) {
+  let bg, color;
+  let classSuffix = "";
+
+  if (who === "me") {
+    const meColors = getMeColors();
+    bg = meColors.bg;
+    color = meColors.color;
+    classSuffix = "me-auto"; // 자동 생성 ME는 별도 클래스
+  } else if (who === "you") {
+    // username으로 YOU ID 찾아서 해당 색상 가져오기
+    const youId = getYouIdByUsername(username);
+    if (youId) {
+      const colors = getYouColors(youId);
+      bg = colors.bg;
+      color = colors.color;
+      classSuffix = getYouClassSuffix(youId);
+    } else {
+      bg = "#292929";
+      color = "#ffffff";
+      classSuffix = "you";
+    }
+  }
 
   const div = document.createElement("div");
-  div.className = "speech-bubble speech-bubble-" + who;
+  div.className = "speech-bubble speech-bubble-" + classSuffix;
   div.innerText = text;
   div.contentEditable = true;
   div.style.backgroundColor = bg;
   div.style.color = color;
+  div.dataset.source = "auto"; // 자동 생성 표시
   div.addEventListener("input", updateOutputFromPreview);
 
   document.getElementById("preview").appendChild(div);
@@ -729,7 +856,15 @@ function updateAfterStyles() {
     styleTag.id = "dynamicArrowStyle";
     document.head.appendChild(styleTag);
   }
-  styleTag.innerHTML = `
+
+  // ME 색상 (수동 입력용)
+  const meBgManual = document.getElementById("meBg").value;
+  const youBgManual = document.getElementById("youBg").value;
+
+  // ME 색상 (자동 생성용)
+  const meColors = getMeColors();
+
+  let css = `
 .speech-bubble-me:after {
   content:"";
   position:absolute;
@@ -738,7 +873,23 @@ function updateAfterStyles() {
   transform:translateY(-50%);
   width:0; height:0;
   border:9px solid transparent;
-  border-left-color: ${document.getElementById("meBg").value};
+  border-left-color: ${meBgManual};
+}
+.speech-bubble-me-auto {
+  background: ${meColors.bg};
+  color: ${meColors.color};
+  margin-left: auto;
+  margin-right: 30px;
+}
+.speech-bubble-me-auto:after {
+  content:"";
+  position:absolute;
+  right:-16px;
+  top:50%;
+  transform:translateY(-50%);
+  width:0; height:0;
+  border:9px solid transparent;
+  border-left-color: ${meColors.bg};
 }
 .speech-bubble-you:after {
   content:"";
@@ -748,8 +899,69 @@ function updateAfterStyles() {
   transform:translateY(-50%);
   width:0; height:0;
   border:9px solid transparent;
-  border-right-color: ${document.getElementById("youBg").value};
+  border-right-color: ${youBgManual};
 }`;
+
+  // 자동 생성 YOU 클래스 CSS 생성 (항상 생성)
+
+  const youIds = getAllYouCharacterIds();
+
+  youIds.forEach((youId) => {
+    const colors = getYouColors(youId);
+    const suffix = getYouClassSuffix(youId);
+
+    css += `
+.speech-bubble-${suffix} {
+  background: ${colors.bg};
+  color: ${colors.color};
+  margin-left: 30px;
+}
+.speech-bubble-${suffix}:after {
+  content:"";
+  position:absolute;
+  left:-16px;
+  top:50%;
+  transform:translateY(-50%);
+  width:0; height:0;
+  border:9px solid transparent;
+  border-right-color: ${colors.bg};
+}`;
+  });
+
+  // 서로 다른 사람 간 대화 간격 추가
+  css += `
+.speech-bubble-me-auto + .speech-bubble-you1,
+.speech-bubble-you1 + .speech-bubble-me-auto {
+  margin-top: 20px;
+}`;
+
+  // 다중 YOU 간 간격
+  if (youIds.length > 1) {
+    for (let i = 0; i < youIds.length; i++) {
+      for (let j = 0; j < youIds.length; j++) {
+        if (i !== j) {
+          const suffix1 = getYouClassSuffix(youIds[i]);
+          const suffix2 = getYouClassSuffix(youIds[j]);
+          css += `
+.speech-bubble-${suffix1} + .speech-bubble-${suffix2} {
+  margin-top: 20px;
+}`;
+        }
+      }
+    }
+
+    // ME-auto와 YOU2, YOU3 등의 간격
+    for (let i = 1; i < youIds.length; i++) {
+      const suffix = getYouClassSuffix(youIds[i]);
+      css += `
+.speech-bubble-me-auto + .speech-bubble-${suffix},
+.speech-bubble-${suffix} + .speech-bubble-me-auto {
+  margin-top: 20px;
+}`;
+    }
+  }
+
+  styleTag.innerHTML = css;
 }
 
 function addBubble(who) {
@@ -764,6 +976,7 @@ function addBubble(who) {
   div.contentEditable = true;
   div.style.backgroundColor = bg;
   div.style.color = color;
+  div.dataset.source = "manual"; // 수동 입력 표시
   div.addEventListener("input", updateOutputFromPreview);
 
   document.getElementById("preview").appendChild(div);
@@ -788,7 +1001,10 @@ function updateOutputFromPreview() {
   const youBg = document.getElementById("youBg").value;
   const youColor = document.getElementById("youColor").value;
 
-  const styleBlock = `
+  // ME 색상 (자동 생성용)
+  const meColors = getMeColors();
+
+  let styleBlock = `
 <style>
 .speech-bubble {
   position: relative;
@@ -821,6 +1037,22 @@ function updateOutputFromPreview() {
   border: 9px solid transparent;
   border-left-color: ${meBg};
 }
+.speech-bubble-me-auto {
+  background: ${meColors.bg};
+  color: ${meColors.color};
+  margin-left: auto;
+  margin-right: 30px;
+}
+.speech-bubble-me-auto:after {
+  content: "";
+  position: absolute;
+  right: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0; height: 0;
+  border: 9px solid transparent;
+  border-left-color: ${meColors.bg};
+}
 .speech-bubble-you {
   background: ${youBg};
   color: ${youColor};
@@ -835,11 +1067,72 @@ function updateOutputFromPreview() {
   width: 0; height: 0;
   border: 9px solid transparent;
   border-right-color: ${youBg};
+}`;
+
+  // 자동 생성 YOU 클래스 CSS 추가 (항상 생성)
+  const youIds = getAllYouCharacterIds();
+  youIds.forEach((youId) => {
+    const colors = getYouColors(youId);
+    const suffix = getYouClassSuffix(youId);
+
+    styleBlock += `
+.speech-bubble-${suffix} {
+  background: ${colors.bg};
+  color: ${colors.color};
+  margin-left: 30px;
 }
+.speech-bubble-${suffix}:after {
+  content: "";
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0; height: 0;
+  border: 9px solid transparent;
+  border-right-color: ${colors.bg};
+}`;
+  });
+
+  styleBlock += `
 .speech-bubble-you + .speech-bubble-me,
 .speech-bubble-me + .speech-bubble-you {
   margin-top: 20px;
-}
+}`;
+
+  // 서로 다른 사람 간 대화 간격 추가
+  styleBlock += `
+.speech-bubble-me-auto + .speech-bubble-you1,
+.speech-bubble-you1 + .speech-bubble-me-auto {
+  margin-top: 20px;
+}`;
+
+  // 다중 YOU 간 간격
+  if (youIds.length > 1) {
+    for (let i = 0; i < youIds.length; i++) {
+      for (let j = 0; j < youIds.length; j++) {
+        if (i !== j) {
+          const suffix1 = getYouClassSuffix(youIds[i]);
+          const suffix2 = getYouClassSuffix(youIds[j]);
+          styleBlock += `
+.speech-bubble-${suffix1} + .speech-bubble-${suffix2} {
+  margin-top: 20px;
+}`;
+        }
+      }
+    }
+
+    // ME-auto와 YOU2, YOU3 등의 간격
+    for (let i = 1; i < youIds.length; i++) {
+      const suffix = getYouClassSuffix(youIds[i]);
+      styleBlock += `
+.speech-bubble-me-auto + .speech-bubble-${suffix},
+.speech-bubble-${suffix} + .speech-bubble-me-auto {
+  margin-top: 20px;
+}`;
+    }
+  }
+
+  styleBlock += `
 </style>
 <br><br>
 `;
@@ -851,10 +1144,13 @@ function updateOutputFromPreview() {
   document.getElementById("output").value = styleBlock + previewHTML + "\n";
 }
 
-// 색상 즉시 반영
+// 색상 즉시 반영 (수동 입력용 - manual 소스만)
 ["meBg", "meColor", "youBg", "youColor"].forEach((id) => {
   document.getElementById(id).addEventListener("input", () => {
     Array.from(document.getElementById("preview").children).forEach((div) => {
+      // 수동 입력 말풍선만 업데이트
+      if (div.dataset.source !== "manual") return;
+
       if (div.classList.contains("speech-bubble-me")) {
         div.style.backgroundColor = document.getElementById("meBg").value;
         div.style.color = document.getElementById("meColor").value;
@@ -868,6 +1164,84 @@ function updateOutputFromPreview() {
   });
 });
 
+// 자동 생성 색상 입력 필드에 실시간 업데이트 리스너 추가
+function attachAutoColorListeners() {
+  // ME 자동 생성 색상 리스너
+  const meBgAuto = document.getElementById("meBg_auto");
+  const meColorAuto = document.getElementById("meColor_auto");
+
+  if (meBgAuto && meColorAuto) {
+    // 기존 리스너 제거를 위해 복제
+    const newMeBgAuto = meBgAuto.cloneNode(true);
+    const newMeColorAuto = meColorAuto.cloneNode(true);
+    meBgAuto.parentNode.replaceChild(newMeBgAuto, meBgAuto);
+    meColorAuto.parentNode.replaceChild(newMeColorAuto, meColorAuto);
+
+    // 새 리스너 추가
+    document
+      .getElementById("meBg_auto")
+      .addEventListener("input", updateAutoGeneratedColors);
+    document
+      .getElementById("meColor_auto")
+      .addEventListener("input", updateAutoGeneratedColors);
+  }
+
+  // 모든 YOU 색상 리스너
+  const youIds = getAllYouCharacterIds();
+  for (const youId of youIds) {
+    const bgInput = document.getElementById(`youBg_${youId}`);
+    const colorInput = document.getElementById(`youColor_${youId}`);
+
+    if (bgInput && colorInput) {
+      // 기존 리스너 제거를 위해 복제
+      const newBgInput = bgInput.cloneNode(true);
+      const newColorInput = colorInput.cloneNode(true);
+      bgInput.parentNode.replaceChild(newBgInput, bgInput);
+      colorInput.parentNode.replaceChild(newColorInput, colorInput);
+
+      // 새 리스너 추가
+      document
+        .getElementById(`youBg_${youId}`)
+        .addEventListener("input", updateAutoGeneratedColors);
+      document
+        .getElementById(`youColor_${youId}`)
+        .addEventListener("input", updateAutoGeneratedColors);
+    }
+  }
+}
+
+// 자동 생성된 말풍선 색상 실시간 업데이트
+function updateAutoGeneratedColors() {
+  const meColors = getMeColors();
+
+  Array.from(document.getElementById("preview").children).forEach((div) => {
+    // 자동 생성 말풍선만 업데이트
+    if (div.dataset.source !== "auto") return;
+
+    // ME 말풍선 업데이트 (me-auto 클래스)
+    if (div.classList.contains("speech-bubble-me-auto")) {
+      div.style.backgroundColor = meColors.bg;
+      div.style.color = meColors.color;
+    }
+
+    // YOU 말풍선 업데이트 (you1, you2, you3 등)
+    const youIds = getAllYouCharacterIds();
+    for (const youId of youIds) {
+      const suffix = getYouClassSuffix(youId);
+      if (div.classList.contains(`speech-bubble-${suffix}`)) {
+        const youColors = getYouColors(youId);
+
+        div.style.backgroundColor = youColors.bg;
+        div.style.color = youColors.color;
+        break;
+      }
+    }
+  });
+
+  updateAfterStyles();
+  updateOutputFromPreview();
+}
+
 // 복사
 function copyCode() {
   const ta = document.getElementById("output");
@@ -878,4 +1252,222 @@ function copyCode() {
   const original = btn.innerText;
   btn.innerText = "복사 완료!";
   setTimeout(() => (btn.innerText = original), 1500);
+}
+
+// YOU 캐릭터 추가
+function addYouCharacter() {
+  const meChar = document.getElementById("meCharacter").value;
+  if (!meChar) {
+    alert("먼저 ME 캐릭터를 선택해주세요.");
+    return;
+  }
+
+  const availablePartners = conversationPairsMap[meChar] || [];
+
+  // ME를 제외한 최대 인원 수 체크
+  if (youCount >= availablePartners.length) {
+    alert(
+      `최대 ${availablePartners.length}명의 대화 상대까지만 추가할 수 있습니다.`
+    );
+    return;
+  }
+
+  const container = document.getElementById("youCharactersContainer");
+
+  // 첫 번째 클릭: YOU를 YOU1로 변경
+  if (youCount === 1) {
+    const firstDiv = container.querySelector("div");
+    const firstLabel = firstDiv.querySelector("label");
+    firstLabel.childNodes[0].textContent = "YOU1: ";
+  }
+
+  // 새로운 YOU 추가
+  youCount++;
+  const newDiv = document.createElement("div");
+  newDiv.style.display = "flex";
+  newDiv.style.alignItems = "center";
+  newDiv.style.gap = "5px";
+  newDiv.style.marginBottom = "5px";
+
+  // 기본 색상 설정 (이전 YOU와 다른 색상)
+  const defaultColors = [
+    { bg: "#292929", color: "#ffffff" }, // 검정
+    { bg: "#4a5568", color: "#ffffff" }, // 진회색
+    { bg: "#2d3748", color: "#ffffff" }, // 어두운 회색
+    { bg: "#1a365d", color: "#ffffff" }, // 어두운 파랑
+    { bg: "#22543d", color: "#ffffff" }, // 어두운 초록
+  ];
+  const colorIndex = (youCount - 1) % defaultColors.length;
+  const defaultColor = defaultColors[colorIndex];
+
+  newDiv.innerHTML = `<label style="margin: 0;">
+    YOU${youCount}:
+    <select id="youCharacter${youCount}">
+      <option value="">선택하세요</option>
+    </select>
+  </label>
+  <label style="margin: 0; font-size: 12px;">배경: <input type="color" id="youBg_youCharacter${youCount}" value="${defaultColor.bg}" style="width: 40px; height: 25px;" /></label>
+  <label style="margin: 0; font-size: 12px;">글자: <input type="color" id="youColor_youCharacter${youCount}" value="${defaultColor.color}" style="width: 40px; height: 25px;" /></label>`;
+
+  container.appendChild(newDiv);
+
+  // 색상 저장
+  youColors[`youCharacter${youCount}`] = {
+    bg: defaultColor.bg,
+    color: defaultColor.color,
+  };
+
+  // 새로운 드롭다운에 옵션 추가
+  const newSelect = document.getElementById(`youCharacter${youCount}`);
+  availablePartners.forEach((partner) => {
+    const option = document.createElement("option");
+    option.value = partner;
+    option.textContent = partner;
+    newSelect.appendChild(option);
+  });
+
+  // 새로운 드롭다운에 이벤트 리스너 추가
+  newSelect.addEventListener("change", function () {
+    updatePartnerDropdown("you", this.value);
+    updateAllDropdowns();
+  });
+
+  // 이미 선택된 캐릭터 비활성화
+  updateAllDropdowns();
+
+  // 새로운 YOU 색상 입력 필드에 이벤트 리스너 추가
+  attachAutoColorListeners();
+}
+
+// 모든 YOU 캐릭터 ID 가져오기
+function getAllYouCharacterIds() {
+  const ids = ["youCharacter"];
+  for (let i = 2; i <= youCount; i++) {
+    ids.push(`youCharacter${i}`);
+  }
+  return ids;
+}
+
+// 모든 YOU 캐릭터 값 가져오기
+function getAllYouCharacters() {
+  const characters = [];
+  const ids = getAllYouCharacterIds();
+
+  for (const id of ids) {
+    const select = document.getElementById(id);
+    if (select && select.value) {
+      characters.push(select.value);
+    }
+  }
+
+  return characters;
+}
+
+// 선택된 모든 캐릭터 가져오기 (ME + 모든 YOU)
+function getAllSelectedCharacters() {
+  const selected = [];
+
+  const meSelect = document.getElementById("meCharacter");
+  if (meSelect && meSelect.value) {
+    selected.push(meSelect.value);
+  }
+
+  const youChars = getAllYouCharacters();
+  selected.push(...youChars);
+
+  return selected;
+}
+
+// 모든 드롭다운 업데이트 (이미 선택된 캐릭터 비활성화)
+function updateAllDropdowns() {
+  const selectedChars = getAllSelectedCharacters();
+
+  // ME 드롭다운 업데이트
+  const meSelect = document.getElementById("meCharacter");
+  const currentMeValue = meSelect.value;
+
+  for (const option of meSelect.options) {
+    if (option.value === "") continue;
+    // 현재 선택된 값이 아니고, 다른 곳에서 선택된 값이면 비활성화
+    option.disabled =
+      option.value !== currentMeValue && selectedChars.includes(option.value);
+  }
+
+  // 모든 YOU 드롭다운 업데이트
+  const youIds = getAllYouCharacterIds();
+  for (const youId of youIds) {
+    const youSelect = document.getElementById(youId);
+    if (!youSelect) continue;
+
+    const currentYouValue = youSelect.value;
+
+    for (const option of youSelect.options) {
+      if (option.value === "") continue;
+      // 현재 선택된 값이 아니고, 다른 곳에서 선택된 값이면 비활성화
+      option.disabled =
+        option.value !== currentYouValue &&
+        selectedChars.includes(option.value);
+    }
+  }
+}
+
+// username으로 YOU ID 찾기
+function getYouIdByUsername(username) {
+  const youIds = getAllYouCharacterIds();
+  for (const youId of youIds) {
+    const select = document.getElementById(youId);
+    if (select && select.value === username) {
+      return youId;
+    }
+  }
+  return null;
+}
+
+// YOU ID로 색상 가져오기 (색상 input에서 현재 값 가져오기)
+function getYouColors(youId) {
+  const bgInput = document.getElementById(`youBg_${youId}`);
+  const colorInput = document.getElementById(`youColor_${youId}`);
+
+  if (bgInput && colorInput) {
+    return {
+      bg: bgInput.value,
+      color: colorInput.value,
+    };
+  }
+
+  // 기본값 반환
+  return { bg: "#292929", color: "#ffffff" };
+}
+
+// ME 색상 가져오기
+function getMeColors() {
+  const bgInput = document.getElementById("meBg_auto");
+  const colorInput = document.getElementById("meColor_auto");
+
+  if (bgInput && colorInput) {
+    return {
+      bg: bgInput.value,
+      color: colorInput.value,
+    };
+  }
+
+  // 기본값 반환
+  return { bg: "#f0f0f0", color: "#333333" };
+}
+
+// YOU ID로 클래스 접미사 가져오기
+function getYouClassSuffix(youId) {
+  // youCharacter일 때 (항상 you1 반환 - 자동 생성은 항상 수동 입력과 분리)
+  if (youId === "youCharacter") {
+    return "you1";
+  }
+
+  // youCharacter2, youCharacter3 등
+  const match = youId.match(/^youCharacter(\d+)$/);
+  if (match) {
+    return `you${match[1]}`;
+  }
+
+  // 기본값
+  return "you1";
 }
