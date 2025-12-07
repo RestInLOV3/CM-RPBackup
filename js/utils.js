@@ -101,11 +101,10 @@ function getYouClassSuffix(youId) {
 // 복사 기능
 function copyCode() {
   const ta = document.getElementById("output");
-  ta.select();
-  ta.setSelectionRange(0, 99999);
-  document.execCommand("copy");
-  const btn = document.querySelector(".copy-btn");
-  const original = btn.innerText;
-  btn.innerText = "복사 완료!";
-  setTimeout(() => (btn.innerText = original), 1500);
+  navigator.clipboard.writeText(ta.value).then(() => {
+    const btn = document.querySelector(".copy-btn");
+    const original = btn.innerText;
+    btn.innerText = "복사 완료!";
+    setTimeout(() => (btn.innerText = original), 1500);
+  });
 }
