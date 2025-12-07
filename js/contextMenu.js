@@ -135,6 +135,11 @@ function insertBubble(targetBubble, position) {
   updateAfterStyles();
   updateOutputFromPreview();
 
+  // localStorage에 저장
+  if (typeof savePreviewHTML === 'function') {
+    savePreviewHTML();
+  }
+
   // 새 말풍선에 포커스 및 텍스트 선택
   newBubble.focus();
 
@@ -154,6 +159,11 @@ function deleteBubble(targetBubble) {
     // 스타일 및 출력 업데이트
     updateAfterStyles();
     updateOutputFromPreview();
+
+    // localStorage에 저장
+    if (typeof savePreviewHTML === 'function') {
+      savePreviewHTML();
+    }
   }
 }
 

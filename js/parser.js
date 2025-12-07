@@ -75,6 +75,11 @@ function parseCSV(text) {
   // 캐릭터 드롭다운 채우기
   populateInitialCharacterDropdowns();
 
+  // localStorage에 저장
+  if (typeof saveFileData === 'function') {
+    saveFileData();
+  }
+
   alert(
     `CSV 파일을 불러왔습니다. ${AppState.csvData.length}개의 대화가 있습니다.`
   );
@@ -111,6 +116,11 @@ function parseXLSX(jsonData) {
 
   // 캐릭터 드롭다운 채우기
   populateInitialCharacterDropdowns();
+
+  // localStorage에 저장
+  if (typeof saveFileData === 'function') {
+    saveFileData();
+  }
 
   alert(
     `XLSX 파일을 불러왔습니다. ${AppState.xlsxData.length}개의 댓글이 있습니다.`
@@ -268,6 +278,11 @@ function parseTXT(text) {
 
   // 캐릭터 드롭다운 채우기
   populateInitialCharacterDropdowns();
+
+  // localStorage에 저장
+  if (typeof saveFileData === 'function') {
+    saveFileData();
+  }
 
   alert(
     `TXT 파일을 불러왔습니다. ${AppState.txtData.length}개의 대화가 있습니다.`

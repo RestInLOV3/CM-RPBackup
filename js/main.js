@@ -35,6 +35,17 @@ document.addEventListener("DOMContentLoaded", function () {
         );
         updateAfterStyles();
         updateOutputFromPreview();
+
+        // localStorage에 저장
+        if (id === "meBg" || id === "meColor") {
+          if (typeof saveMeColors === "function") {
+            saveMeColors();
+          }
+        } else if (id === "youBg" || id === "youColor") {
+          if (typeof saveYouColors === "function") {
+            saveYouColors();
+          }
+        }
       });
     }
   });

@@ -349,7 +349,7 @@ button:hover {
 
 /* 캐릭터 선택 섹션 */
 .character-selection {
-  display: grid;
+  display: none;
   grid-template-columns: auto;
   grid-template-areas:
     "a b"

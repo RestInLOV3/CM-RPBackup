@@ -78,6 +78,11 @@ function generateFromCSV() {
 
   updateAfterStyles();
   updateOutputFromPreview();
+
+  // localStorage에 저장
+  if (typeof savePreviewHTML === "function") {
+    savePreviewHTML();
+  }
 }
 
 // TXT 데이터로 자동 생성
@@ -144,6 +149,11 @@ function generateFromTXT() {
 
   updateAfterStyles();
   updateOutputFromPreview();
+
+  // localStorage에 저장
+  if (typeof savePreviewHTML === "function") {
+    savePreviewHTML();
+  }
 }
 
 // XLSX 데이터로 자동 생성
@@ -256,4 +266,9 @@ function generateFromXLSX() {
 
   updateAfterStyles();
   updateOutputFromPreview();
+
+  // localStorage에 저장
+  if (typeof savePreviewHTML === "function") {
+    savePreviewHTML();
+  }
 }

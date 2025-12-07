@@ -135,6 +135,11 @@ function handleGlobalStyleChange() {
 
   // 미리보기에 스타일 적용
   applyGlobalStylesToPreview();
+
+  // localStorage에 저장
+  if (typeof saveGlobalStyles === 'function') {
+    saveGlobalStyles();
+  }
 }
 
 // 전역 스타일 입력 필드에 이벤트 리스너 추가

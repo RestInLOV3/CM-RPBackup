@@ -7,6 +7,10 @@ function populateInitialCharacterDropdowns() {
   const meContainer = document.getElementById("meCharacterContainer");
   const youContainer = document.getElementById("youCharactersContainer");
 
+  // 캐릭터 드롭다운 컨테이너 SHOW
+  const characterSelection = meContainer.parentElement;
+  characterSelection.style.display = "grid";
+
   meContainer.style.display = "inline";
   youContainer.style.display = "inline";
 
@@ -83,6 +87,11 @@ function populateInitialCharacterDropdowns() {
       updatePartnerDropdown("me", this.value);
       updateAllDropdowns();
       updateAddYouButtonVisibility();
+
+      // localStorage에 저장
+      if (typeof saveFileData === "function") {
+        saveFileData();
+      }
     });
 
   // YOU 선택 시 ME 드롭다운 업데이트
@@ -92,6 +101,11 @@ function populateInitialCharacterDropdowns() {
       updatePartnerDropdown("you", this.value);
       updateAllDropdowns();
       updateAddYouButtonVisibility();
+
+      // localStorage에 저장
+      if (typeof saveFileData === "function") {
+        saveFileData();
+      }
     });
 
   // 자동 생성 색상 입력 필드에 이벤트 리스너 추가
@@ -256,6 +270,11 @@ function addYouCharacter() {
   newSelect.addEventListener("change", function () {
     updatePartnerDropdown("you", this.value);
     updateAllDropdowns();
+
+    // localStorage에 저장
+    if (typeof saveFileData === "function") {
+      saveFileData();
+    }
   });
 
   // 이미 선택된 캐릭터 비활성화
@@ -266,6 +285,11 @@ function addYouCharacter() {
 
   // 추가 버튼 표시 여부 업데이트
   updateAddYouButtonVisibility();
+
+  // localStorage에 저장 (YOU 추가됨)
+  if (typeof saveFileData === "function") {
+    saveFileData();
+  }
 }
 
 // YOU 캐릭터 삭제
@@ -282,14 +306,75 @@ function removeYouCharacter(youNumber) {
     // youColors에서도 제거
     delete AppState.youColors[`youCharacter${youNumber}`];
 
-    // youCount 낮춤
-    AppState.youCount--;
+    // 남아있는 YOU들을 순서대로 재번호매김
+    renumberYouCharacters();
 
     // 모든 드롭다운 업데이트
     updateAllDropdowns();
 
     // 추가 버튼 표시 여부 업데이트
     updateAddYouButtonVisibility();
+
+    // localStorage에 저장 (YOU 삭제됨)
+    if (typeof saveFileData === "function") {
+      saveFileData();
+    }
+  }
+}
+
+// YOU 캐릭터들을 순서대로 재번호매김
+function renumberYouCharacters() {
+  const container = document.getElementById("youCharactersContainer");
+  const youDivs = Array.from(container.querySelectorAll("div[data-you-number]"));
+
+  // 새로운 youColors 객체 생성
+  const newYouColors = {};
+
+  // 각 div를 순서대로 재번호
+  youDivs.forEach((div, index) => {
+    const newNumber = index + 1;
+
+    // data-you-number 업데이트
+    div.dataset.youNumber = newNumber;
+
+    // select 요소 찾기 및 ID 업데이트
+    const select = div.querySelector("select");
+    const oldId = select.id;
+    const newId = newNumber === 1 ? "youCharacter" : `youCharacter${newNumber}`;
+    select.id = newId;
+
+    // 색상 input ID 업데이트
+    const bgInput = div.querySelector('input[type="color"][id^="youBg_"]');
+    const colorInput = div.querySelector('input[type="color"][id^="youColor_"]');
+    bgInput.id = `youBg_${newId}`;
+    colorInput.id = `youColor_${newId}`;
+
+    // 라벨 텍스트 업데이트
+    const label = div.querySelector("label");
+    label.childNodes[0].textContent = newNumber === 1 ? "YOU: " : `YOU${newNumber}: `;
+
+    // 삭제 버튼 onclick 업데이트 (newNumber > 1인 경우만 버튼 존재)
+    const deleteBtn = div.querySelector("button");
+    if (deleteBtn) {
+      deleteBtn.onclick = function() { removeYouCharacter(newNumber); };
+    }
+
+    // 색상 정보 복사
+    if (AppState.youColors[oldId]) {
+      newYouColors[newId] = AppState.youColors[oldId];
+    }
+  });
+
+  // youColors 재설정
+  AppState.youColors = newYouColors;
+
+  // youCount 업데이트 (실제 남아있는 YOU 개수로)
+  AppState.youCount = youDivs.length;
+
+  // 첫 번째 YOU만 남았을 때 라벨을 "YOU:"로 변경
+  if (youDivs.length === 1) {
+    const firstLabel = youDivs[0].querySelector("label");
+    firstLabel.childNodes[0].textContent = "YOU: ";
   }
 }
 
@@ -322,7 +407,10 @@ function updateAddYouButtonVisibility() {
   );
 
   // 추가 가능한 파트너가 있으면 버튼 표시, 없으면 숨김
-  addYouBtn.style.display = availablePartners.length > 0 ? "block" : "none";
+  addYouBtn.style.display =
+    (availablePartners.length && selectedYouChars.length) > 0
+      ? "block"
+      : "none";
 }
 
 // 말풍선 추가 (수동 입력)
@@ -345,6 +433,11 @@ function addBubble(who) {
   updateAfterStyles();
   updateOutputFromPreview();
   document.getElementById(who + "Text").value = "";
+
+  // localStorage에 저장
+  if (typeof savePreviewHTML === "function") {
+    savePreviewHTML();
+  }
 }
 
 // 미리보기에 말풍선 추가 (헬퍼 함수)
@@ -382,4 +475,9 @@ function addBubbleToPreview(who, text, username, meChar) {
   div.addEventListener("input", updateOutputFromPreview);
 
   document.getElementById("preview").appendChild(div);
+
+  // localStorage에 저장
+  if (typeof savePreviewHTML === "function") {
+    savePreviewHTML();
+  }
 }
