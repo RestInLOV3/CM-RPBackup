@@ -307,7 +307,11 @@ body {
 `;
 
   const previewHTML = Array.from(document.getElementById("preview").children)
-    .map((d) => d.outerHTML)
+    .map((d) => {
+      const clone = d.cloneNode(true); // 원본 건드리지 않는 복제본
+      clone.removeAttribute("contenteditable"); // 속성 제거
+      return clone.outerHTML;
+    })
     .join("\n");
 
   document.getElementById("output").value = styleBlock + previewHTML + "\n";
