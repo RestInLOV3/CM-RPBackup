@@ -29,7 +29,7 @@ function populateInitialCharacterDropdowns() {
   }
 
   // YOU 컨테이너 초기화
-  youContainer.innerHTML = `<div style="display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+  youContainer.innerHTML = `<div style="display: flex; align-items: center; gap: 5px; margin-bottom: 5px;" data-you-number="1">
     <label style="margin: 0;">
       YOU:
       <select id="youCharacter">
@@ -222,6 +222,10 @@ function addYouCharacter() {
     const firstDiv = container.querySelector("div");
     const firstLabel = firstDiv.querySelector("label");
     firstLabel.childNodes[0].textContent = "YOU1: ";
+    // 첫 번째 YOU에 data-you-number 설정 (이미 1로 설정되어 있어야 하지만 확인)
+    if (!firstDiv.dataset.youNumber) {
+      firstDiv.dataset.youNumber = "1";
+    }
   }
 
   // 새로운 YOU 추가
@@ -304,10 +308,14 @@ function removeYouCharacter(youNumber) {
     targetDiv.remove();
 
     // youColors에서도 제거
-    delete AppState.youColors[`youCharacter${youNumber}`];
+    const youId = youNumber === 1 ? "youCharacter" : `youCharacter${youNumber}`;
+    delete AppState.youColors[youId];
 
     // 남아있는 YOU들을 순서대로 재번호매김
     renumberYouCharacters();
+
+    // 모든 YOU 드롭다운 재빌드 (삭제된 캐릭터를 다시 선택 가능하게)
+    rebuildAllYouDropdowns();
 
     // 모든 드롭다운 업데이트
     updateAllDropdowns();
@@ -322,10 +330,56 @@ function removeYouCharacter(youNumber) {
   }
 }
 
+// 모든 YOU 드롭다운을 재빌드 (삭제 후 선택 가능한 캐릭터 목록 갱신)
+function rebuildAllYouDropdowns() {
+  const meChar = document.getElementById("meCharacter").value;
+  if (!meChar) return;
+
+  const youIds = getAllYouCharacterIds();
+  const selectedYouChars = getAllYouCharacters();
+
+  for (const youId of youIds) {
+    const youSelect = document.getElementById(youId);
+    if (!youSelect) continue;
+
+    const currentValue = youSelect.value;
+
+    // 이 YOU를 제외한 다른 YOU들
+    const otherYous = selectedYouChars.filter(char => char !== currentValue);
+
+    // 사용 가능한 파트너 계산
+    let availablePartners = AppState.conversationPairsMap[meChar] || [];
+
+    for (const otherYou of otherYous) {
+      const otherPartners = AppState.conversationPairsMap[otherYou] || [];
+      availablePartners = availablePartners.filter(partner =>
+        otherPartners.includes(partner)
+      );
+    }
+
+    // 드롭다운 재빌드
+    youSelect.innerHTML = '<option value="">선택하세요</option>';
+
+    for (const partner of availablePartners) {
+      const option = document.createElement("option");
+      option.value = partner;
+      option.textContent = partner;
+      youSelect.appendChild(option);
+    }
+
+    // 이전 선택 복원
+    if (currentValue && availablePartners.includes(currentValue)) {
+      youSelect.value = currentValue;
+    }
+  }
+}
+
 // YOU 캐릭터들을 순서대로 재번호매김
 function renumberYouCharacters() {
   const container = document.getElementById("youCharactersContainer");
-  const youDivs = Array.from(container.querySelectorAll("div[data-you-number]"));
+  const youDivs = Array.from(
+    container.querySelectorAll("div[data-you-number]")
+  );
 
   // 새로운 youColors 객체 생성
   const newYouColors = {};
@@ -345,18 +399,34 @@ function renumberYouCharacters() {
 
     // 색상 input ID 업데이트
     const bgInput = div.querySelector('input[type="color"][id^="youBg_"]');
-    const colorInput = div.querySelector('input[type="color"][id^="youColor_"]');
+    const colorInput = div.querySelector(
+      'input[type="color"][id^="youColor_"]'
+    );
     bgInput.id = `youBg_${newId}`;
     colorInput.id = `youColor_${newId}`;
 
     // 라벨 텍스트 업데이트
     const label = div.querySelector("label");
-    label.childNodes[0].textContent = newNumber === 1 ? "YOU: " : `YOU${newNumber}: `;
+    if (youDivs.length === 1) {
+      // YOU가 1개만 남았을 때
+      label.childNodes[0].textContent = "YOU: ";
+    } else {
+      // YOU가 2개 이상일 때: YOU1, YOU2, YOU3...
+      label.childNodes[0].textContent = `YOU${newNumber}: `;
+    }
 
-    // 삭제 버튼 onclick 업데이트 (newNumber > 1인 경우만 버튼 존재)
+    // 삭제 버튼 처리 (첫 번째 YOU는 삭제할 수 없음)
     const deleteBtn = div.querySelector("button");
     if (deleteBtn) {
-      deleteBtn.onclick = function() { removeYouCharacter(newNumber); };
+      if (newNumber === 1) {
+        // 첫 번째 YOU에 삭제 버튼이 있으면 제거
+        deleteBtn.remove();
+      } else {
+        // newNumber > 1인 경우 삭제 버튼의 onclick 업데이트
+        deleteBtn.onclick = function () {
+          removeYouCharacter(newNumber);
+        };
+      }
     }
 
     // 색상 정보 복사
@@ -370,12 +440,6 @@ function renumberYouCharacters() {
 
   // youCount 업데이트 (실제 남아있는 YOU 개수로)
   AppState.youCount = youDivs.length;
-
-  // 첫 번째 YOU만 남았을 때 라벨을 "YOU:"로 변경
-  if (youDivs.length === 1) {
-    const firstLabel = youDivs[0].querySelector("label");
-    firstLabel.childNodes[0].textContent = "YOU: ";
-  }
 }
 
 // addYouBtn 버튼 표시 여부 업데이트

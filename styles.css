@@ -210,9 +210,18 @@ button:hover {
   background-color: #005bb5;
 }
 
+#copyright {
+  font-family: "Escoredream";
+  font-size: 14px;
+  font-weight: 300;
+  justify-self: center;
+  color: white;
+  margin-bottom: 4px;
+}
+
 #preview {
   min-height: 200px;
-  max-height: 1352px;
+  max-height: 1100px;
   padding: 15px;
   border-radius: 12px;
   background: #fff;
@@ -225,8 +234,10 @@ button:hover {
 }
 
 .color-settings {
-  display: flex;
-  gap: 15px;
+  display: grid;
+  max-width: 270px;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 30px;
   flex-wrap: wrap;
   margin-bottom: 15px;
 }
@@ -234,7 +245,7 @@ button:hover {
 .color-settings label {
   display: flex;
   align-items: center;
-  gap: 5px;
+  justify-content: space-between;
   font-size: 14px;
 }
 
@@ -476,6 +487,12 @@ button:hover {
   padding: 0;
   padding-top: 2px;
   justify-self: center;
+}
+
+/* 수동 입력 스타일 */
+#meText,
+#youText {
+  min-height: 100px;
 }
 
 /* 컨텍스트 메뉴 커스텀 스타일 */
