@@ -98,7 +98,6 @@
 .speech-bubble {
   position: relative;
   padding: 15px 20px;
-  border-radius: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   line-height: 1.5;
   display: block;
@@ -111,9 +110,14 @@
   font-family: kopub돋움L;
 }
 
+.speech-bubble:focus {
+  outline: none;
+}
+
 .speech-bubble-you {
   background: #292929;
   color: #fff;
+  border-radius: 0px 20px 20px 20px;
   margin-left: 30px;
 }
 
@@ -132,6 +136,7 @@
 .speech-bubble-me {
   background: #f0f0f0;
   color: #333;
+  border-radius: 20px 0px 20px 20px;
   margin-left: auto;
   margin-right: 30px;
 }
@@ -253,7 +258,10 @@ button:hover {
 }
 
 .color-settings input {
-  max-width: 30%;
+  margin-left: 3px;
+  max-width: 25px;
+  border-radius: 5px;
+  border: solid 1px gray;
 }
 
 .code-container {
