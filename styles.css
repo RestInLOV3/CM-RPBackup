@@ -195,6 +195,11 @@ button:hover {
   gap: 8px;
 }
 
+/* 전체 스타일 편집 섹션 */
+#globalBgImage {
+  display: none;
+}
+
 /* CSV 업로드 섹션 */
 .csv-upload-section {
   display: flex;

@@ -13,30 +13,91 @@
         <h3>전체 스타일 편집</h3>
         <div class="global-style-section">
           <div class="style-row">
-            <label>전체 배경 색: <input type="color" id="globalBgColor" value="#ffffff" /></label>
-            <label>배경 이미지 URL: <input type="text" id="globalBgImage" placeholder="https://..." style="width: 200px;" /></label>
+            <label
+              >배경 색: <input type="color" id="globalBgColor" value="#ffffff"
+            /></label>
+            <label
+              >배경 이미지:
+              <input
+                type="text"
+                id="globalBgImage"
+                placeholder="https://..."
+                style="width: 200px"
+            /></label>
           </div>
           <div class="style-row">
-            <label>그림자 범위: <input type="range" id="shadowBlur" min="0" max="20" value="8" step="1" /> <span id="shadowBlurValue">8</span>px</label>
-            <label>그림자 색: <input type="color" id="shadowColor" value="#000000" /></label>
-            <label>그림자 투명도: <input type="range" id="shadowOpacity" min="0" max="100" value="20" step="1" /> <span id="shadowOpacityValue">20</span>%</label>
+            <label
+              >그림자 범위:
+              <input
+                type="range"
+                id="shadowBlur"
+                min="0"
+                max="20"
+                value="8"
+                step="1"
+              />
+              <span id="shadowBlurValue">8</span>px</label
+            >
+            <label
+              >그림자 색: <input type="color" id="shadowColor" value="#000000"
+            /></label>
+            <label
+              >그림자 투명도:
+              <input
+                type="range"
+                id="shadowOpacity"
+                min="0"
+                max="100"
+                value="20"
+                step="1"
+              />
+              <span id="shadowOpacityValue">20</span>%</label
+            >
           </div>
           <div class="style-row">
-            <label>자간: <input type="range" id="letterSpacing" min="-2" max="5" value="0" step="0.5" /> <span id="letterSpacingValue">0</span>px</label>
-            <label>행간: <input type="range" id="lineHeight" min="1" max="3" value="1.5" step="0.1" /> <span id="lineHeightValue">1.5</span></label>
+            <label
+              >자간:
+              <input
+                type="range"
+                id="letterSpacing"
+                min="-2"
+                max="5"
+                value="0"
+                step="0.5"
+              />
+              <span id="letterSpacingValue">0</span>px</label
+            >
+            <label
+              >행간:
+              <input
+                type="range"
+                id="lineHeight"
+                min="1"
+                max="3"
+                value="1.5"
+                step="0.1"
+              />
+              <span id="lineHeightValue">1.5</span></label
+            >
           </div>
           <div class="style-row">
-            <label>줄바꿈: <select id="wordBreak">
-              <option value="normal">기본</option>
-              <option value="keep-all">단어 유지</option>
-              <option value="break-all">강제 줄바꿈</option>
-            </select></label>
-            <label>정렬: <select id="textAlign">
-              <option value="justify">양쪽 정렬</option>
-              <option value="left">왼쪽 정렬</option>
-              <option value="right">오른쪽 정렬</option>
-              <option value="center">가운데 정렬</option>
-            </select></label>
+            <label
+              >줄바꿈:
+              <select id="wordBreak">
+                <option value="normal">기본</option>
+                <option value="keep-all">단어 유지</option>
+                <option value="break-all">강제 줄바꿈</option>
+              </select></label
+            >
+            <label
+              >정렬:
+              <select id="textAlign">
+                <option value="justify">양쪽 정렬</option>
+                <option value="left">왼쪽 정렬</option>
+                <option value="right">오른쪽 정렬</option>
+                <option value="center">가운데 정렬</option>
+              </select></label
+            >
           </div>
         </div>
 
@@ -61,7 +122,13 @@
               </select>
             </label>
           </div>
-          <button id="addYouBtn" onclick="addYouCharacter()" style="margin-left: 5px;">+</button>
+          <button
+            id="addYouBtn"
+            onclick="addYouCharacter()"
+            style="margin-left: 5px"
+          >
+            +
+          </button>
           <button onclick="generateFromData()">자동 생성</button>
         </div>
 
