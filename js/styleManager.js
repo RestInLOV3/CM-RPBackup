@@ -34,7 +34,7 @@ function updateAfterStyles() {
   content:"";
   position:absolute;
   right:-8px;
-  top:8.5px;
+  top:0px;
   width:0; height:0;
   border:9px solid transparent;
   border-top-color: ${meBgManual};
@@ -62,7 +62,7 @@ function updateAfterStyles() {
   content:"";
   position:absolute;
   left:-8px;
-  top:8.5px;
+  top:0px;
   width:0; height:0;
   border:9px solid transparent;
   border-top-color: ${youBgManual};
@@ -201,7 +201,7 @@ body {
   content: "";
   position: absolute;
   right: -8px;
-  top: 8.5px;
+  top: 0px;
   width: 0; height: 0;
   border: 9px solid transparent;
   border-top-color: ${meBg};
@@ -232,7 +232,7 @@ body {
   content: "";
   position: absolute;
   left: -8px;
-  top: 8.5px;
+  top: 0px;
   width: 0; height: 0;
   border: 9px solid transparent;
   border-top-color: ${youBg};

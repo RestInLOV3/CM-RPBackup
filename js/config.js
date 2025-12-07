@@ -15,9 +15,9 @@ const AppState = {
 const STYLE_BLOCK = `<style>
 .speech-bubble { position: relative; padding: 15px 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); line-height:1.5; display:block; width:fit-content; max-width:60%; word-wrap:break-word; white-space:normal; margin-bottom:5px; text-align:justify; font-family:kopub돋움L; }
 .speech-bubble-you { background:#292929; border-radius: 0px 20px 20px 20px; color:#fff; margin-left:30px; }
-.speech-bubble-you:after { content:""; position:absolute; left:-8px; top:9px; width:0; height:0; border:9px solid transparent; border-top-color:#292929; }
+.speech-bubble-you:after { content:""; position:absolute; left:-8px; top:0px; width:0; height:0; border:9px solid transparent; border-top-color:#292929; }
 .speech-bubble-me { background:#f0f0f0; border-radius: 20px 0px 20px 20px; color:#333; margin-left:auto; margin-right:30px; }
-.speech-bubble-me:after { content:""; position:absolute; right:-8px; top:9px; width:0; height:0; border:9px solid transparent; border-top-color:#f0f0f0; }
+.speech-bubble-me:after { content:""; position:absolute; right:-8px; top:0px; width:0; height:0; border:9px solid transparent; border-top-color:#f0f0f0; }
 .speech-bubble-you + .speech-bubble-me, .speech-bubble-me + .speech-bubble-you { margin-top:20px; }
 </style><br><br>`;
 
