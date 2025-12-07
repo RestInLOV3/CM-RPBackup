@@ -3,9 +3,12 @@ function populateInitialCharacterDropdowns() {
   // YOU 카운터 초기화
   AppState.youCount = 1;
 
-  // ME 색상 입력 필드 추가 (기존에 없으면)
-  const meCharacterSelect = document.getElementById("meCharacter");
-  const meContainer = meCharacterSelect.parentElement;
+  // ME/YOU 드롭다운 박스 SHOW
+  const meContainer = document.getElementById("meCharacterContainer");
+  const youContainer = document.getElementById("youCharactersContainer");
+
+  meContainer.style.display = "inline";
+  youContainer.style.display = "inline";
 
   // 기존 색상 입력 필드가 없으면 추가
   if (!document.getElementById("meBg_auto")) {
@@ -15,24 +18,31 @@ function populateInitialCharacterDropdowns() {
     meColorDiv.style.gap = "5px";
     meColorDiv.style.marginTop = "5px";
     meColorDiv.innerHTML = `
-      <label style="margin: 0; font-size: 12px;">배경: <input type="color" id="meBg_auto" value="#f0f0f0" style="width: 40px; height: 25px;" /></label>
-      <label style="margin: 0; font-size: 12px;">글자: <input type="color" id="meColor_auto" value="#333333" style="width: 40px; height: 25px;" /></label>
+      <label style="margin: 0; font-size: 12px;">배경<input type="color" id="meBg_auto" value="#f0f0f0" style="width: 40px; height: 25px;" /></label>
+      <label style="margin: 0; font-size: 12px;">글자<input type="color" id="meColor_auto" value="#333333" style="width: 40px; height: 25px;" /></label>
     `;
     meContainer.appendChild(meColorDiv);
   }
 
   // YOU 컨테이너 초기화
-  const container = document.getElementById("youCharactersContainer");
-  container.innerHTML = `<div style="display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+  youContainer.innerHTML = `<div style="display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
     <label style="margin: 0;">
       YOU:
       <select id="youCharacter">
         <option value="">선택하세요</option>
       </select>
     </label>
-    <label style="margin: 0; font-size: 12px;">배경: <input type="color" id="youBg_youCharacter" value="#292929" style="width: 40px; height: 25px;" /></label>
-    <label style="margin: 0; font-size: 12px;">글자: <input type="color" id="youColor_youCharacter" value="#ffffff" style="width: 40px; height: 25px;" /></label>
+    <label style="margin: 0; font-size: 12px;">배경<input type="color" id="youBg_youCharacter" value="#292929" style="width: 40px; height: 25px;" /></label>
+    <label style="margin: 0; font-size: 12px;">글자<input type="color" id="youColor_youCharacter" value="#ffffff" style="width: 40px; height: 25px;" /></label>
   </div>`;
+
+  // addYouBtn 버튼 추가 (youContainer 안에)
+  const addYouBtn = document.createElement("button");
+  addYouBtn.id = "addYouBtn";
+  addYouBtn.textContent = "+";
+  addYouBtn.style.marginTop = "5px";
+  addYouBtn.onclick = addYouCharacter;
+  youContainer.appendChild(addYouBtn);
 
   // 초기 YOU 색상 저장
   AppState.youColors = {
@@ -72,6 +82,7 @@ function populateInitialCharacterDropdowns() {
     .addEventListener("change", function () {
       updatePartnerDropdown("me", this.value);
       updateAllDropdowns();
+      updateAddYouButtonVisibility();
     });
 
   // YOU 선택 시 ME 드롭다운 업데이트
@@ -80,10 +91,14 @@ function populateInitialCharacterDropdowns() {
     .addEventListener("change", function () {
       updatePartnerDropdown("you", this.value);
       updateAllDropdowns();
+      updateAddYouButtonVisibility();
     });
 
   // 자동 생성 색상 입력 필드에 이벤트 리스너 추가
   attachAutoColorListeners();
+
+  // 초기 버튼 상태 업데이트 (ME 선택 전이므로 숨김)
+  updateAddYouButtonVisibility();
 }
 
 // 드롭다운에 캐릭터 이름 추가
@@ -202,6 +217,7 @@ function addYouCharacter() {
   newDiv.style.alignItems = "center";
   newDiv.style.gap = "5px";
   newDiv.style.marginBottom = "5px";
+  newDiv.dataset.youNumber = AppState.youCount; // 삭제 시 참조용
 
   // 기본 색상 설정 (이전 YOU와 다른 색상)
   const colorIndex = (AppState.youCount - 1) % DEFAULT_YOU_COLORS.length;
@@ -213,10 +229,13 @@ function addYouCharacter() {
       <option value="">선택하세요</option>
     </select>
   </label>
-  <label style="margin: 0; font-size: 12px;">배경: <input type="color" id="youBg_youCharacter${AppState.youCount}" value="${defaultColor.bg}" style="width: 40px; height: 25px;" /></label>
-  <label style="margin: 0; font-size: 12px;">글자: <input type="color" id="youColor_youCharacter${AppState.youCount}" value="${defaultColor.color}" style="width: 40px; height: 25px;" /></label>`;
+  <label style="margin: 0; font-size: 12px;">배경<input type="color" id="youBg_youCharacter${AppState.youCount}" value="${defaultColor.bg}" style="width: 40px; height: 25px;" /></label>
+  <label style="margin: 0; font-size: 12px;">글자<input type="color" id="youColor_youCharacter${AppState.youCount}" value="${defaultColor.color}" style="width: 40px; height: 25px;" /></label>
+  <button style="margin-top: 22px; margin-left: 5px; padding: 2px 9px 4px 9px;" onclick="removeYouCharacter(${AppState.youCount})">-</button>`;
 
-  container.appendChild(newDiv);
+  // addYouBtn 버튼 앞에 삽입
+  const addBtn = document.getElementById("addYouBtn");
+  container.insertBefore(newDiv, addBtn);
 
   // 색상 저장
   AppState.youColors[`youCharacter${AppState.youCount}`] = {
@@ -244,6 +263,66 @@ function addYouCharacter() {
 
   // 새로운 YOU 색상 입력 필드에 이벤트 리스너 추가
   attachAutoColorListeners();
+
+  // 추가 버튼 표시 여부 업데이트
+  updateAddYouButtonVisibility();
+}
+
+// YOU 캐릭터 삭제
+function removeYouCharacter(youNumber) {
+  const container = document.getElementById("youCharactersContainer");
+  const targetDiv = container.querySelector(
+    `div[data-you-number="${youNumber}"]`
+  );
+
+  if (targetDiv) {
+    // 해당 YOU 삭제
+    targetDiv.remove();
+
+    // youColors에서도 제거
+    delete AppState.youColors[`youCharacter${youNumber}`];
+
+    // youCount 낮춤
+    AppState.youCount--;
+
+    // 모든 드롭다운 업데이트
+    updateAllDropdowns();
+
+    // 추가 버튼 표시 여부 업데이트
+    updateAddYouButtonVisibility();
+  }
+}
+
+// addYouBtn 버튼 표시 여부 업데이트
+function updateAddYouButtonVisibility() {
+  const addYouBtn = document.getElementById("addYouBtn");
+  if (!addYouBtn) return;
+
+  const meChar = document.getElementById("meCharacter").value;
+  if (!meChar) {
+    addYouBtn.style.display = "none";
+    return;
+  }
+
+  // 이미 선택된 모든 YOU 캐릭터 가져오기
+  const selectedYouChars = getAllYouCharacters();
+
+  // 추가 가능한 캐릭터 계산
+  let availablePartners = AppState.conversationPairsMap[meChar] || [];
+
+  for (const youChar of selectedYouChars) {
+    const youPartners = AppState.conversationPairsMap[youChar] || [];
+    availablePartners = availablePartners.filter((partner) =>
+      youPartners.includes(partner)
+    );
+  }
+
+  availablePartners = availablePartners.filter(
+    (partner) => !selectedYouChars.includes(partner)
+  );
+
+  // 추가 가능한 파트너가 있으면 버튼 표시, 없으면 숨김
+  addYouBtn.style.display = availablePartners.length > 0 ? "block" : "none";
 }
 
 // 말풍선 추가 (수동 입력)

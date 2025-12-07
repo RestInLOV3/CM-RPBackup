@@ -2,171 +2,178 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <title>대화 백업 HTML 생성기</title>
+    <title>ChatBackup</title>
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
   </head>
   <body>
-    <h2>대화 백업 HTML 생성기</h2>
     <div class="container">
       <div class="left-panel">
-        <h3>전체 스타일 편집</h3>
-        <div class="global-style-section">
-          <div class="style-row">
+        <div class="section-container global-style">
+          <h3>Settings</h3>
+          <div class="global-style-container">
+            <div class="style-row">
+              <label
+                ><span class="label-text">배경 색:</span>
+                <input type="color" id="globalBgColor" value="#ffffff"
+              /></label>
+              <label
+                ><span class="label-text">배경 이미지:</span>
+                <input
+                  type="text"
+                  id="globalBgImage"
+                  placeholder="https://..."
+                  style="width: 200px"
+              /></label>
+            </div>
+            <div class="style-row">
+              <label
+                ><span class="label-text">그림자 범위:</span>
+                <input
+                  type="range"
+                  id="shadowBlur"
+                  min="0"
+                  max="20"
+                  value="8"
+                  step="1"
+                />
+                <span><span id="shadowBlurValue">8</span>px</span></label
+              >
+              <label
+                ><span class="label-text">그림자 색:</span>
+                <input type="color" id="shadowColor" value="#000000"
+              /></label>
+              <label
+                ><span class="label-text">그림자 투명도:</span>
+                <input
+                  type="range"
+                  id="shadowOpacity"
+                  min="0"
+                  max="100"
+                  value="20"
+                  step="1"
+                />
+                <span><span id="shadowOpacityValue">20</span>%</span></label
+              >
+            </div>
+            <div class="style-row">
+              <label
+                ><span class="label-text">자간:</span>
+                <input
+                  type="range"
+                  id="letterSpacing"
+                  min="-2"
+                  max="5"
+                  value="0"
+                  step="0.5"
+                />
+                <span><span id="letterSpacingValue">0</span>px</span></label
+              >
+              <label
+                ><span class="label-text">행간:</span>
+                <input
+                  type="range"
+                  id="lineHeight"
+                  min="1"
+                  max="3"
+                  value="1.5"
+                  step="0.1"
+                />
+                <span id="lineHeightValue">1.5</span></label
+              >
+            </div>
+            <div class="style-row">
+              <label
+                ><span class="label-text">줄바꿈:</span>
+                <select id="wordBreak">
+                  <option value="normal">기본</option>
+                  <option value="keep-all">단어 유지</option>
+                  <option value="break-all">강제 줄바꿈</option>
+                </select></label
+              >
+              <label
+                ><span class="label-text">정렬:</span>
+                <select id="textAlign">
+                  <option value="justify">양쪽 정렬</option>
+                  <option value="left">왼쪽 정렬</option>
+                  <option value="right">오른쪽 정렬</option>
+                  <option value="center">가운데 정렬</option>
+                </select></label
+              >
+            </div>
+            <button id="reset">초기화</button>
+          </div>
+        </div>
+
+        <div class="section-container file">
+          <h3>파일로 자동 생성</h3>
+          <div class="csv-upload-section">
+            <input type="file" id="dataFile" accept=".csv,.xlsx,.txt" />
+            <button onclick="loadFile()">파일 불러오기</button>
+          </div>
+
+          <div class="character-selection">
+            <div id="meCharacterContainer">
+              <label>
+                ME:
+                <select id="meCharacter">
+                  <option value="">선택하세요</option>
+                </select>
+              </label>
+            </div>
+            <div id="youCharactersContainer">
+              <label>
+                YOU:
+                <select id="youCharacter">
+                  <option value="">선택하세요</option>
+                </select>
+              </label>
+            </div>
+            <button onclick="generateFromData()">자동 생성</button>
+          </div>
+        </div>
+
+        <div class="section-container hand">
+          <h3>수동 대화 입력</h3>
+          <div class="meTextContainer">
+            <textarea id="meText" placeholder="Me 대화 입력"></textarea>
+            <button onclick="addBubble('me')">추가</button>
+          </div>
+          <div class="youTextContainer">
+            <textarea id="youText" placeholder="You 대화 입력"></textarea>
+            <button onclick="addBubble('you')">추가</button>
+          </div>
+
+          <div class="color-settings">
             <label
-              >배경 색: <input type="color" id="globalBgColor" value="#ffffff"
+              >ME 배경: <input type="color" id="meBg" value="#f0f0f0"
             /></label>
             <label
-              >배경 이미지:
-              <input
-                type="text"
-                id="globalBgImage"
-                placeholder="https://..."
-                style="width: 200px"
-            /></label>
-          </div>
-          <div class="style-row">
-            <label
-              >그림자 범위:
-              <input
-                type="range"
-                id="shadowBlur"
-                min="0"
-                max="20"
-                value="8"
-                step="1"
-              />
-              <span id="shadowBlurValue">8</span>px</label
-            >
-            <label
-              >그림자 색: <input type="color" id="shadowColor" value="#000000"
+              >ME 글자: <input type="color" id="meColor" value="#333333"
             /></label>
             <label
-              >그림자 투명도:
-              <input
-                type="range"
-                id="shadowOpacity"
-                min="0"
-                max="100"
-                value="20"
-                step="1"
-              />
-              <span id="shadowOpacityValue">20</span>%</label
-            >
-          </div>
-          <div class="style-row">
+              >YOU 배경: <input type="color" id="youBg" value="#292929"
+            /></label>
             <label
-              >자간:
-              <input
-                type="range"
-                id="letterSpacing"
-                min="-2"
-                max="5"
-                value="0"
-                step="0.5"
-              />
-              <span id="letterSpacingValue">0</span>px</label
-            >
-            <label
-              >행간:
-              <input
-                type="range"
-                id="lineHeight"
-                min="1"
-                max="3"
-                value="1.5"
-                step="0.1"
-              />
-              <span id="lineHeightValue">1.5</span></label
-            >
-          </div>
-          <div class="style-row">
-            <label
-              >줄바꿈:
-              <select id="wordBreak">
-                <option value="normal">기본</option>
-                <option value="keep-all">단어 유지</option>
-                <option value="break-all">강제 줄바꿈</option>
-              </select></label
-            >
-            <label
-              >정렬:
-              <select id="textAlign">
-                <option value="justify">양쪽 정렬</option>
-                <option value="left">왼쪽 정렬</option>
-                <option value="right">오른쪽 정렬</option>
-                <option value="center">가운데 정렬</option>
-              </select></label
-            >
+              >YOU 글자: <input type="color" id="youColor" value="#ffffff"
+            /></label>
           </div>
         </div>
 
-        <h3>파일로 자동 생성</h3>
-        <div class="csv-upload-section">
-          <input type="file" id="dataFile" accept=".csv,.xlsx,.txt" />
-          <button onclick="loadFile()">파일 불러오기</button>
-        </div>
-
-        <div class="character-selection">
-          <label>
-            ME:
-            <select id="meCharacter">
-              <option value="">선택하세요</option>
-            </select>
-          </label>
-          <div id="youCharactersContainer">
-            <label>
-              YOU:
-              <select id="youCharacter">
-                <option value="">선택하세요</option>
-              </select>
-            </label>
+        <div class="section-container">
+          <h3>HTML 코드</h3>
+          <div class="code-container">
+            <button class="copy-btn" onclick="copyCode()">복사</button>
+            <textarea id="output" readonly></textarea>
           </div>
-          <button
-            id="addYouBtn"
-            onclick="addYouCharacter()"
-            style="margin-left: 5px"
-          >
-            +
-          </button>
-          <button onclick="generateFromData()">자동 생성</button>
-        </div>
-
-        <h3>수동 대화 입력</h3>
-        <div class="meTextContainer">
-          <textarea id="meText" placeholder="Me 대화 입력"></textarea>
-          <button onclick="addBubble('me')">추가</button>
-        </div>
-        <div class="youTextContainer">
-          <textarea id="youText" placeholder="You 대화 입력"></textarea>
-          <button onclick="addBubble('you')">추가</button>
-        </div>
-
-        <div class="color-settings">
-          <label
-            >YOU 배경: <input type="color" id="youBg" value="#292929"
-          /></label>
-          <label
-            >YOU 글자: <input type="color" id="youColor" value="#ffffff"
-          /></label>
-          <label
-            >ME 배경: <input type="color" id="meBg" value="#f0f0f0"
-          /></label>
-          <label
-            >ME 글자: <input type="color" id="meColor" value="#333333"
-          /></label>
-        </div>
-
-        <h3>HTML 코드</h3>
-        <div class="code-container">
-          <button class="copy-btn" onclick="copyCode()">복사</button>
-          <textarea id="output" readonly></textarea>
         </div>
       </div>
 
       <div class="right-panel">
-        <h3>미리보기</h3>
-        <div id="preview"></div>
+        <div class="section-container preview">
+          <h3>미리보기</h3>
+          <div id="preview"></div>
+        </div>
       </div>
     </div>
 

@@ -1,3 +1,99 @@
+@font-face {
+  font-family: "Isamanru";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-10@1.0/GongGothicLight.woff")
+    format("woff");
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Isamanru";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-10@1.0/GongGothicMedium.woff")
+    format("woff");
+  font-weight: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Isamanru";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-10@1.0/GongGothicBold.woff")
+    format("woff");
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Escoredream";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-1Thin.woff")
+    format("woff");
+  font-weight: 100;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Escoredream";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-2ExtraLight.woff")
+    format("woff");
+  font-weight: 200;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Escoredream";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff")
+    format("woff");
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Escoredream";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-4Regular.woff")
+    format("woff");
+  font-weight: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Escoredream";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-5Medium.woff")
+    format("woff");
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Escoredream";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-6Bold.woff")
+    format("woff");
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Escoredream";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-7ExtraBold.woff")
+    format("woff");
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Escoredream";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-8Heavy.woff")
+    format("woff");
+  font-weight: 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Escoredream";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-9Black.woff")
+    format("woff");
+  font-weight: 900;
+  font-display: swap;
+}
+
 /* 말풍선 기본 스타일 */
 .speech-bubble {
   position: relative;
@@ -57,21 +153,28 @@
   margin-top: 20px;
 }
 
+/* -------------------------------- */
+
 /* 페이지 전체 스타일 */
 body {
   background: #f0f2f5;
-  font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+  background-image: url("/src/snow-background.jpg");
+  background-size: cover;
+  backdrop-filter: blur(3px);
+  font-family: "Escoredream", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
   color: #333;
   margin: 0;
   padding: 20px;
 }
 
-h2 {
+h3 {
   text-align: center;
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  color: #222;
+  font-family: "Isamanru";
+  font-size: 22px;
+  font-weight: 300;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  color: #302d39;
 }
 
 textarea {
@@ -108,11 +211,17 @@ button:hover {
 }
 
 #preview {
+  min-height: 200px;
+  max-height: 1352px;
   padding: 15px;
   border-radius: 12px;
   background: #fff;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-  min-height: 150px;
+  overflow-y: auto;
+}
+
+#preview::-webkit-scrollbar {
+  display: none;
 }
 
 .color-settings {
@@ -174,14 +283,40 @@ button:hover {
 
 .container {
   display: flex;
+  height: auto;
   gap: 100px;
   flex-wrap: wrap;
   padding: 20px 100px;
+  align-items: top;
+  justify-content: center;
 }
 
-.left-panel,
+.left-panel {
+  flex: 1;
+  max-width: 500px;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.section-container {
+  display: flex;
+  max-width: 500px;
+  min-width: 480px;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  border: solid 2px white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
 .right-panel {
   flex: 1;
+  max-width: 600px;
   min-width: 300px;
   display: flex;
   flex-direction: column;
@@ -195,12 +330,7 @@ button:hover {
   gap: 8px;
 }
 
-/* 전체 스타일 편집 섹션 */
-#globalBgImage {
-  display: none;
-}
-
-/* CSV 업로드 섹션 */
+/* 파일 업로드 섹션 */
 .csv-upload-section {
   display: flex;
   gap: 10px;
@@ -219,7 +349,11 @@ button:hover {
 
 /* 캐릭터 선택 섹션 */
 .character-selection {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto;
+  grid-template-areas:
+    "a b"
+    "c c";
   gap: 15px;
   align-items: top;
   margin-bottom: 20px;
@@ -235,6 +369,7 @@ button:hover {
 }
 
 .character-selection select {
+  width: 140px;
   padding: 8px 12px;
   border: 1px solid #ccc;
   border-radius: 8px;
@@ -250,27 +385,46 @@ button:hover {
   box-shadow: 0 0 8px rgba(0, 122, 255, 0.3);
 }
 
+.character-selection input[type="color"] {
+  width: 25px !important;
+  border-radius: 5px;
+  border: solid 1px gray;
+}
+
+#meCharacterContainer {
+  display: none;
+  max-width: 180px;
+  grid-area: a;
+}
+
+#youCharactersContainer {
+  display: none;
+  min-width: 280px;
+  grid-area: b;
+}
+
 .character-selection button {
+  max-width: 150px;
+  grid-area: c;
   margin-top: auto;
+  justify-self: center;
+  align-self: center;
 }
 
 /* 전체 스타일 편집 섹션 */
-.global-style-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
-  padding: 15px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+.global-style-container {
+  display: grid;
+  row-gap: 15px;
+}
+
+#globalBgImage {
+  display: none;
 }
 
 .style-row {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 .style-row label {
@@ -279,6 +433,11 @@ button:hover {
   gap: 5px;
   font-size: 13px;
   font-weight: 500;
+}
+
+.style-row label .label-text {
+  display: inline-block;
+  width: 83px;
 }
 
 .style-row input[type="color"] {
@@ -308,4 +467,13 @@ button:hover {
   font-size: 13px;
   background: white;
   cursor: pointer;
+}
+
+#reset {
+  width: 70px;
+  height: 35px;
+  margin-top: 3px;
+  padding: 0;
+  padding-top: 2px;
+  justify-self: center;
 }
