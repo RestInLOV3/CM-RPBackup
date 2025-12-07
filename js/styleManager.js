@@ -27,41 +27,48 @@ function updateAfterStyles() {
   const meColors = getMeColors();
 
   let css = `
+.speech-bubble-me {
+  border-radius: 20px;
+  border-top-right-radius: 0;
+}
 .speech-bubble-me:after {
   content:"";
   position:absolute;
-  right:-16px;
-  top:50%;
-  transform:translateY(-50%);
+  right:-8px;
+  top:8.5px;
   width:0; height:0;
   border:9px solid transparent;
-  border-left-color: ${meBgManual};
+  border-top-color: ${meBgManual};
 }
 .speech-bubble-me-auto {
   background: ${meColors.bg};
   color: ${meColors.color};
   margin-left: auto;
   margin-right: 30px;
+  border-radius: 20px;
+  border-top-right-radius: 0;
 }
 .speech-bubble-me-auto:after {
   content:"";
   position:absolute;
-  right:-16px;
-  top:50%;
-  transform:translateY(-50%);
+  right:-8px;
+  top:0px;
   width:0; height:0;
   border:9px solid transparent;
-  border-left-color: ${meColors.bg};
+  border-top-color: ${meColors.bg};
+}
+.speech-bubble-you {
+  border-radius: 20px;
+  border-top-left-radius: 0;
 }
 .speech-bubble-you:after {
   content:"";
   position:absolute;
-  left:-16px;
-  top:50%;
-  transform:translateY(-50%);
+  left:-8px;
+  top:8.5px;
   width:0; height:0;
   border:9px solid transparent;
-  border-right-color: ${youBgManual};
+  border-top-color: ${youBgManual};
 }`;
 
   // 자동 생성 YOU 클래스 CSS 생성 (항상 생성)
@@ -91,16 +98,17 @@ function updateAfterStyles() {
   background: ${colors.bg};
   color: ${colors.color};
   margin-left: 30px;
+  border-radius: 20px;
+  border-top-left-radius: 0;
 }
 .speech-bubble-${suffix}:after {
   content:"";
   position:absolute;
-  left:-16px;
-  top:50%;
-  transform:translateY(-50%);
+  left:-8px;
+  top:0px;
   width:0; height:0;
   border:9px solid transparent;
-  border-right-color: ${colors.bg};
+  border-top-color: ${colors.bg};
 }`;
   });
 
@@ -188,47 +196,50 @@ body {
   color: ${meColor};
   margin-left: auto;
   margin-right: 30px;
+  border-radius: 20px;
+  border-top-right-radius: 0;
 }
 .speech-bubble-me:after {
   content: "";
   position: absolute;
-  right: -16px;
-  top: 50%;
-  transform: translateY(-50%);
+  right: -8px;
+  top: 8.5px;
   width: 0; height: 0;
   border: 9px solid transparent;
-  border-left-color: ${meBg};
+  border-top-color: ${meBg};
 }
 .speech-bubble-me-auto {
   background: ${meColors.bg};
   color: ${meColors.color};
   margin-left: auto;
   margin-right: 30px;
+  border-radius: 20px;
+  border-top-right-radius: 0;
 }
 .speech-bubble-me-auto:after {
   content: "";
   position: absolute;
-  right: -16px;
-  top: 50%;
-  transform: translateY(-50%);
+  right: -8px;
+  top: 0px;
   width: 0; height: 0;
   border: 9px solid transparent;
-  border-left-color: ${meColors.bg};
+  border-top-color: ${meColors.bg};
 }
 .speech-bubble-you {
   background: ${youBg};
   color: ${youColor};
   margin-left: 30px;
+  border-radius: 20px;
+  border-top-left-radius: 0;
 }
 .speech-bubble-you:after {
   content: "";
   position: absolute;
-  left: -16px;
-  top: 50%;
-  transform: translateY(-50%);
+  left: -8px;
+  top: 8.5px;
   width: 0; height: 0;
   border: 9px solid transparent;
-  border-right-color: ${youBg};
+  border-top-color: ${youBg};
 }`;
 
   // 자동 생성 YOU 클래스 CSS 추가 (항상 생성)
@@ -242,16 +253,17 @@ body {
   background: ${colors.bg};
   color: ${colors.color};
   margin-left: 30px;
+  border-radius: 20px;
+  border-top-left-radius: 0;
 }
 .speech-bubble-${suffix}:after {
   content: "";
   position: absolute;
-  left: -16px;
-  top: 50%;
-  transform: translateY(-50%);
+  left: -8px;
+  top: 0px;
   width: 0; height: 0;
   border: 9px solid transparent;
-  border-right-color: ${colors.bg};
+  border-top-color: ${colors.bg};
 }`;
   });
 
