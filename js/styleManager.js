@@ -123,22 +123,35 @@ function updateOutputFromPreview() {
   // ME 색상 (자동 생성용)
   const meColors = getMeColors();
 
+  // 전역 스타일 가져오기
+  const globalStyles = getGlobalStyles();
+  const shadowCSS = getShadowCSS();
+
   let styleBlock = `
 <style>
+body {
+  background-color: ${globalStyles.bgColor};${globalStyles.bgImage && globalStyles.bgImage.trim() !== '' ? `
+  background-image: url('${globalStyles.bgImage}');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;` : ''}
+}
 .speech-bubble {
   position: relative;
   padding: 15px 20px;
   border-radius: 20px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  line-height: 1.5;
+  box-shadow: ${shadowCSS};
+  line-height: ${globalStyles.lineHeight};
   display: block;
   width: fit-content;
   max-width: 60%;
   word-wrap: break-word;
   white-space: normal;
   margin-bottom: 5px;
-  text-align: justify;
+  text-align: ${globalStyles.textAlign};
   font-family: kopub돋움L;
+  letter-spacing: ${globalStyles.letterSpacing}px;
+  word-break: ${globalStyles.wordBreak};
 }
 .speech-bubble-me {
   background: ${meBg};
