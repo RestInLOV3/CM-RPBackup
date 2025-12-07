@@ -145,18 +145,16 @@
           </div>
 
           <div class="color-settings">
-            <label
-              >ME 배경: <input type="color" id="meBg" value="#f0f0f0"
-            /></label>
-            <label
-              >ME 글자: <input type="color" id="meColor" value="#333333"
-            /></label>
-            <label
-              >YOU 배경: <input type="color" id="youBg" value="#292929"
-            /></label>
-            <label
-              >YOU 글자: <input type="color" id="youColor" value="#ffffff"
-            /></label>
+            <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 10px;">
+              <div id="profile_meCharacter_manual" class="profile-circle" onclick="uploadProfileImage('meCharacter_manual')"></div>
+              <label>ME 배경: <input type="color" id="meBg" value="#f0f0f0" /></label>
+              <label>ME 글자: <input type="color" id="meColor" value="#333333" /></label>
+            </div>
+            <div style="display: flex; align-items: center; gap: 5px;">
+              <div id="profile_youCharacter_manual" class="profile-circle" onclick="uploadProfileImage('youCharacter_manual')"></div>
+              <label>YOU 배경: <input type="color" id="youBg" value="#292929" /></label>
+              <label>YOU 글자: <input type="color" id="youColor" value="#ffffff" /></label>
+            </div>
           </div>
         </div>
 
@@ -180,6 +178,7 @@
 
     <!-- 모듈화된 스크립트 파일들 (순서 중요함!) -->
     <script src="js/config.js"></script>
+    <script src="js/profileImageManager.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/parser.js"></script>
     <script src="js/dataProcessor.js"></script>

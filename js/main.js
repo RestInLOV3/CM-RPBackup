@@ -1,5 +1,21 @@
 // 페이지 로드 시 초기화
 document.addEventListener("DOMContentLoaded", function () {
+  // 수동 입력 프로필 사진 복원
+  const savedImages = localStorage.getItem('chatBackup_profileImages');
+  if (savedImages) {
+    try {
+      const images = JSON.parse(savedImages);
+      if (images.meCharacter_manual) {
+        updateProfileImageUI('meCharacter_manual', images.meCharacter_manual);
+      }
+      if (images.youCharacter_manual) {
+        updateProfileImageUI('youCharacter_manual', images.youCharacter_manual);
+      }
+    } catch (e) {
+      console.error('수동 입력 프로필 사진 복원 실패:', e);
+    }
+  }
+
   // Enter 키 처리 (수동 입력)
   ["me", "you"].forEach((who) => {
     const textElement = document.getElementById(who + "Text");

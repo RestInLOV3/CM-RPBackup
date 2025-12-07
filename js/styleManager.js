@@ -1,7 +1,7 @@
 // Throttle 함수: 일정 시간마다 최대 한 번만 실행 (성능 개선)
 function throttle(func, delay) {
   let lastCall = 0;
-  return function(...args) {
+  return function (...args) {
     const now = Date.now();
     if (now - lastCall >= delay) {
       lastCall = now;
@@ -28,8 +28,7 @@ function updateAfterStyles() {
 
   let css = `
 .speech-bubble-me {
-  border-radius: 20px;
-  border-top-right-radius: 0;
+  border-radius: 20px 0px 20px 20px;
 }
 .speech-bubble-me:after {
   content:"";
@@ -45,8 +44,7 @@ function updateAfterStyles() {
   color: ${meColors.color};
   margin-left: auto;
   margin-right: 30px;
-  border-radius: 20px;
-  border-top-right-radius: 0;
+  border-radius: 20px 0px 20px 20px;
 }
 .speech-bubble-me-auto:after {
   content:"";
@@ -58,8 +56,7 @@ function updateAfterStyles() {
   border-top-color: ${meColors.bg};
 }
 .speech-bubble-you {
-  border-radius: 20px;
-  border-top-left-radius: 0;
+  border-radius: 0px 20px 20px 20px;
 }
 .speech-bubble-you:after {
   content:"";
@@ -75,8 +72,8 @@ function updateAfterStyles() {
   const youIds = getAllYouCharacterIds();
 
   // 디버깅: youIds 확인
-  console.log('[updateAfterStyles] youIds:', youIds);
-  console.log('[updateAfterStyles] AppState.youCount:', AppState.youCount);
+  console.log("[updateAfterStyles] youIds:", youIds);
+  console.log("[updateAfterStyles] AppState.youCount:", AppState.youCount);
 
   youIds.forEach((youId) => {
     const colors = getYouColors(youId);
@@ -90,7 +87,7 @@ function updateAfterStyles() {
       bgInputValue: bgInput?.value,
       colorInputExists: !!colorInput,
       colorInputValue: colorInput?.value,
-      colors: colors
+      colors: colors,
     });
 
     css += `
@@ -98,8 +95,7 @@ function updateAfterStyles() {
   background: ${colors.bg};
   color: ${colors.color};
   margin-left: 30px;
-  border-radius: 20px;
-  border-top-left-radius: 0;
+  border-radius: 0px 20px 20px 20px;
 }
 .speech-bubble-${suffix}:after {
   content:"";
@@ -168,16 +164,19 @@ function updateOutputFromPreview() {
   let styleBlock = `
 <style>
 body {
-  background-color: ${globalStyles.bgColor};${globalStyles.bgImage && globalStyles.bgImage.trim() !== '' ? `
+  background-color: ${globalStyles.bgColor};${
+    globalStyles.bgImage && globalStyles.bgImage.trim() !== ""
+      ? `
   background-image: url('${globalStyles.bgImage}');
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;` : ''}
+  background-repeat: no-repeat;`
+      : ""
+  }
 }
 .speech-bubble {
   position: relative;
   padding: 15px 20px;
-  border-radius: 20px;
   box-shadow: ${shadowCSS};
   line-height: ${globalStyles.lineHeight};
   display: block;
@@ -196,8 +195,7 @@ body {
   color: ${meColor};
   margin-left: auto;
   margin-right: 30px;
-  border-radius: 20px;
-  border-top-right-radius: 0;
+  border-radius: 20px 0px 20px 20px;
 }
 .speech-bubble-me:after {
   content: "";
@@ -213,8 +211,7 @@ body {
   color: ${meColors.color};
   margin-left: auto;
   margin-right: 30px;
-  border-radius: 20px;
-  border-top-right-radius: 0;
+  border-radius: 20px 0px 20px 20px;
 }
 .speech-bubble-me-auto:after {
   content: "";
@@ -229,8 +226,7 @@ body {
   background: ${youBg};
   color: ${youColor};
   margin-left: 30px;
-  border-radius: 20px;
-  border-top-left-radius: 0;
+  border-radius: 0px 20px 20px 20px;
 }
 .speech-bubble-you:after {
   content: "";
@@ -253,8 +249,7 @@ body {
   background: ${colors.bg};
   color: ${colors.color};
   margin-left: 30px;
-  border-radius: 20px;
-  border-top-left-radius: 0;
+  border-radius: 0px 20px 20px 20px;
 }
 .speech-bubble-${suffix}:after {
   content: "";
@@ -318,7 +313,7 @@ body {
   document.getElementById("output").value = styleBlock + previewHTML + "\n";
 
   // localStorage에 저장 (디바운싱: 500ms 후에 저장)
-  if (typeof savePreviewHTML === 'function') {
+  if (typeof savePreviewHTML === "function") {
     clearTimeout(savePreviewTimer);
     savePreviewTimer = setTimeout(() => {
       savePreviewHTML();

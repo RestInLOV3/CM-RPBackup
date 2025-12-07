@@ -21,24 +21,66 @@ function populateInitialCharacterDropdowns() {
     meColorDiv.style.alignItems = "center";
     meColorDiv.style.gap = "5px";
     meColorDiv.style.marginTop = "5px";
-    meColorDiv.innerHTML = `
-      <label style="margin: 0; font-size: 12px;">배경<input type="color" id="meBg_auto" value="#f0f0f0" style="width: 40px; height: 25px;" /></label>
-      <label style="margin: 0; font-size: 12px;">글자<input type="color" id="meColor_auto" value="#333333" style="width: 40px; height: 25px;" /></label>
-    `;
+
+    // 프로필 사진 원형 추가
+    const profileCircle = createProfileCircle("meCharacter_auto");
+    meColorDiv.appendChild(profileCircle);
+
+    // 색상 입력 필드 추가
+    const bgLabel = document.createElement("label");
+    bgLabel.style.margin = "0";
+    bgLabel.style.fontSize = "12px";
+    bgLabel.innerHTML =
+      '배경<input type="color" id="meBg_auto" value="#f0f0f0" style="width: 40px; height: 25px;" />';
+    meColorDiv.appendChild(bgLabel);
+
+    const colorLabel = document.createElement("label");
+    colorLabel.style.margin = "0";
+    colorLabel.style.fontSize = "12px";
+    colorLabel.innerHTML =
+      '글자<input type="color" id="meColor_auto" value="#333333" style="width: 40px; height: 25px;" />';
+    meColorDiv.appendChild(colorLabel);
+
     meContainer.appendChild(meColorDiv);
   }
 
   // YOU 컨테이너 초기화
-  youContainer.innerHTML = `<div style="display: flex; align-items: center; gap: 5px; margin-bottom: 5px;" data-you-number="1">
-    <label style="margin: 0;">
-      YOU:
-      <select id="youCharacter">
-        <option value="">선택하세요</option>
-      </select>
-    </label>
-    <label style="margin: 0; font-size: 12px;">배경<input type="color" id="youBg_youCharacter" value="#292929" style="width: 40px; height: 25px;" /></label>
-    <label style="margin: 0; font-size: 12px;">글자<input type="color" id="youColor_youCharacter" value="#ffffff" style="width: 40px; height: 25px;" /></label>
-  </div>`;
+  youContainer.innerHTML = "";
+  const firstYouDiv = document.createElement("div");
+  firstYouDiv.style.display = "flex";
+  firstYouDiv.style.alignItems = "center";
+  firstYouDiv.style.gap = "5px";
+  firstYouDiv.style.marginBottom = "5px";
+  firstYouDiv.dataset.youNumber = "1";
+
+  // 프로필 사진 원형
+  const youProfileCircle = createProfileCircle("youCharacter");
+  firstYouDiv.appendChild(youProfileCircle);
+
+  // YOU 드롭다운
+  const youLabel = document.createElement("label");
+  youLabel.style.margin = "0";
+  youLabel.innerHTML =
+    'YOU: <select id="youCharacter"><option value="">선택하세요</option></select>';
+  firstYouDiv.appendChild(youLabel);
+
+  // 배경 색상
+  const youBgLabel = document.createElement("label");
+  youBgLabel.style.margin = "0";
+  youBgLabel.style.fontSize = "12px";
+  youBgLabel.innerHTML =
+    '배경<input type="color" id="youBg_youCharacter" value="#292929" style="width: 40px; height: 25px;" />';
+  firstYouDiv.appendChild(youBgLabel);
+
+  // 글자 색상
+  const youColorLabel = document.createElement("label");
+  youColorLabel.style.margin = "0";
+  youColorLabel.style.fontSize = "12px";
+  youColorLabel.innerHTML =
+    '글자<input type="color" id="youColor_youCharacter" value="#ffffff" style="width: 40px; height: 25px;" />';
+  firstYouDiv.appendChild(youColorLabel);
+
+  youContainer.appendChild(firstYouDiv);
 
   // addYouBtn 버튼 추가 (youContainer 안에)
   const addYouBtn = document.createElement("button");
@@ -241,15 +283,42 @@ function addYouCharacter() {
   const colorIndex = (AppState.youCount - 1) % DEFAULT_YOU_COLORS.length;
   const defaultColor = DEFAULT_YOU_COLORS[colorIndex];
 
-  newDiv.innerHTML = `<label style="margin: 0;">
-    YOU${AppState.youCount}:
-    <select id="youCharacter${AppState.youCount}">
-      <option value="">선택하세요</option>
-    </select>
-  </label>
-  <label style="margin: 0; font-size: 12px;">배경<input type="color" id="youBg_youCharacter${AppState.youCount}" value="${defaultColor.bg}" style="width: 40px; height: 25px;" /></label>
-  <label style="margin: 0; font-size: 12px;">글자<input type="color" id="youColor_youCharacter${AppState.youCount}" value="${defaultColor.color}" style="width: 40px; height: 25px;" /></label>
-  <button style="margin-top: 22px; margin-left: 5px; padding: 2px 9px 4px 9px;" onclick="removeYouCharacter(${AppState.youCount})">-</button>`;
+  // 프로필 사진 원형
+  const newProfileCircle = createProfileCircle(
+    `youCharacter${AppState.youCount}`
+  );
+  newDiv.appendChild(newProfileCircle);
+
+  // YOU 드롭다운
+  const newYouLabel = document.createElement("label");
+  newYouLabel.style.margin = "0";
+  newYouLabel.innerHTML = `YOU${AppState.youCount}: <select id="youCharacter${AppState.youCount}"><option value="">선택하세요</option></select>`;
+  newDiv.appendChild(newYouLabel);
+
+  // 배경 색상
+  const newBgLabel = document.createElement("label");
+  newBgLabel.style.margin = "0";
+  newBgLabel.style.fontSize = "12px";
+  newBgLabel.innerHTML = `배경<input type="color" id="youBg_youCharacter${AppState.youCount}" value="${defaultColor.bg}" style="width: 40px; height: 25px;" />`;
+  newDiv.appendChild(newBgLabel);
+
+  // 글자 색상
+  const newColorLabel = document.createElement("label");
+  newColorLabel.style.margin = "0";
+  newColorLabel.style.fontSize = "12px";
+  newColorLabel.innerHTML = `글자<input type="color" id="youColor_youCharacter${AppState.youCount}" value="${defaultColor.color}" style="width: 40px; height: 25px;" />`;
+  newDiv.appendChild(newColorLabel);
+
+  // 삭제 버튼
+  const deleteBtn = document.createElement("button");
+  deleteBtn.style.marginTop = "22px";
+  deleteBtn.style.marginLeft = "5px";
+  deleteBtn.style.padding = "2px 9px 4px 9px";
+  deleteBtn.textContent = "-";
+  deleteBtn.onclick = function () {
+    removeYouCharacter(AppState.youCount);
+  };
+  newDiv.appendChild(deleteBtn);
 
   // addYouBtn 버튼 앞에 삽입
   const addBtn = document.getElementById("addYouBtn");
@@ -345,14 +414,14 @@ function rebuildAllYouDropdowns() {
     const currentValue = youSelect.value;
 
     // 이 YOU를 제외한 다른 YOU들
-    const otherYous = selectedYouChars.filter(char => char !== currentValue);
+    const otherYous = selectedYouChars.filter((char) => char !== currentValue);
 
     // 사용 가능한 파트너 계산
     let availablePartners = AppState.conversationPairsMap[meChar] || [];
 
     for (const otherYou of otherYous) {
       const otherPartners = AppState.conversationPairsMap[otherYou] || [];
-      availablePartners = availablePartners.filter(partner =>
+      availablePartners = availablePartners.filter((partner) =>
         otherPartners.includes(partner)
       );
     }

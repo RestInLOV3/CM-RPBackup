@@ -188,6 +188,10 @@ textarea {
   box-sizing: border-box;
 }
 
+textarea::-webkit-scrollbar {
+  display: none;
+}
+
 textarea:focus {
   outline: none;
   border-color: #007aff;
@@ -235,8 +239,7 @@ button:hover {
 
 .color-settings {
   display: grid;
-  max-width: 270px;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 45fr 50fr;
   gap: 10px 30px;
   flex-wrap: wrap;
   margin-bottom: 15px;
@@ -246,7 +249,11 @@ button:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 14px;
+  font-size: 13px;
+}
+
+.color-settings input {
+  max-width: 30%;
 }
 
 .code-container {
@@ -516,4 +523,22 @@ button:hover {
 
 .bubble-context-menu-theme .context-menu-item:hover {
   background: #f0f0f0;
+}
+
+/* 프로필 사진 원형 */
+.profile-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-top: 5px;
+  background-color: #e0e0e0;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+.profile-circle:hover {
+  opacity: 0.8;
 }
