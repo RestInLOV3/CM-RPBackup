@@ -275,7 +275,7 @@ function isSystemMessage(line) {
   return systemPatterns.some((pattern) => line.includes(pattern));
 }
 
-// 형식 3: [제니엘] [오전 9:00] 내용
+// 형식 3: [이름] [오전 9:00] 내용
 function tryParseFormat3(line) {
   const match = line.match(/^\[(.+?)\]\s*\[(오전|오후)\s+\d+:\d+\]\s*(.*)$/);
   if (match) {
