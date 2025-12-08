@@ -30,10 +30,6 @@ function updateAfterStyles() {
   const globalStyles = getGlobalStyles();
 
   let css = `
-body {
-  margin: 0;
-  padding: 0;
-}
 .body-container {
   background-color: ${globalStyles.bgColor};${
     globalStyles.bgImage && globalStyles.bgImage.trim() !== ""
@@ -196,20 +192,6 @@ function updateOutputFromPreview() {
 
   let styleBlock = `
 <style>
-body {
-  margin: 0;
-  padding: 0;
-  background-color: ${globalStyles.bgColor};${
-    globalStyles.bgImage && globalStyles.bgImage.trim() !== ""
-      ? `
-  background-image: url('${globalStyles.bgImage}');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;`
-      : ""
-  }
-}
 .body-container {
   background-color: ${globalStyles.bgColor};${
     globalStyles.bgImage && globalStyles.bgImage.trim() !== ""
