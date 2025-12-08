@@ -632,10 +632,10 @@ button:hover {
 .character-name {
   grid-row: 1;
   grid-column: 2;
-  font-size: 12px;
+  font-size: 14.5px;
   color: #666;
   font-family: "";
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
   align-self: center;
 }
