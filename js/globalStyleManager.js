@@ -7,6 +7,7 @@ if (!AppState.globalStyles) {
     shadowBlur: 8,
     shadowColor: '#000000',
     shadowOpacity: 20,
+    fontSize: 16,
     letterSpacing: 0,
     lineHeight: 1.5,
     wordBreak: 'normal',
@@ -24,6 +25,8 @@ function getGlobalStyleElements() {
     shadowColor: document.getElementById('shadowColor'),
     shadowOpacity: document.getElementById('shadowOpacity'),
     shadowOpacityValue: document.getElementById('shadowOpacityValue'),
+    fontSize: document.getElementById('fontSize'),
+    fontSizeValue: document.getElementById('fontSizeValue'),
     letterSpacing: document.getElementById('letterSpacing'),
     letterSpacingValue: document.getElementById('letterSpacingValue'),
     lineHeight: document.getElementById('lineHeight'),
@@ -41,6 +44,7 @@ function getGlobalStyles() {
     shadowBlur: AppState.globalStyles.shadowBlur,
     shadowColor: AppState.globalStyles.shadowColor,
     shadowOpacity: AppState.globalStyles.shadowOpacity,
+    fontSize: AppState.globalStyles.fontSize,
     letterSpacing: AppState.globalStyles.letterSpacing,
     lineHeight: AppState.globalStyles.lineHeight,
     wordBreak: AppState.globalStyles.wordBreak,
@@ -84,6 +88,7 @@ function applyGlobalStylesToPreview() {
   const bubbles = preview.querySelectorAll('.speech-bubble');
   bubbles.forEach(bubble => {
     bubble.style.boxShadow = getShadowCSS();
+    bubble.style.fontSize = `${styles.fontSize}px`;
     bubble.style.letterSpacing = `${styles.letterSpacing}px`;
     bubble.style.lineHeight = styles.lineHeight;
     bubble.style.wordBreak = styles.wordBreak;
@@ -106,6 +111,10 @@ function updateSliderDisplays() {
     elements.shadowOpacityValue.textContent = elements.shadowOpacity.value;
   }
 
+  if (elements.fontSize && elements.fontSizeValue) {
+    elements.fontSizeValue.textContent = elements.fontSize.value;
+  }
+
   if (elements.letterSpacing && elements.letterSpacingValue) {
     elements.letterSpacingValue.textContent = elements.letterSpacing.value;
   }
@@ -125,6 +134,7 @@ function handleGlobalStyleChange() {
   AppState.globalStyles.shadowBlur = parseFloat(elements.shadowBlur.value);
   AppState.globalStyles.shadowColor = elements.shadowColor.value;
   AppState.globalStyles.shadowOpacity = parseFloat(elements.shadowOpacity.value);
+  AppState.globalStyles.fontSize = parseFloat(elements.fontSize.value);
   AppState.globalStyles.letterSpacing = parseFloat(elements.letterSpacing.value);
   AppState.globalStyles.lineHeight = parseFloat(elements.lineHeight.value);
   AppState.globalStyles.wordBreak = elements.wordBreak.value;
@@ -142,6 +152,21 @@ function handleGlobalStyleChange() {
   }
 }
 
+// 배경 이미지 초기화 함수
+function resetBackgroundImage() {
+  const bgImageElement = document.getElementById('globalBgImage');
+  if (bgImageElement) {
+    bgImageElement.value = '';
+    AppState.globalStyles.bgImage = '';
+    applyGlobalStylesToPreview();
+
+    // localStorage에 저장
+    if (typeof saveGlobalStyles === 'function') {
+      saveGlobalStyles();
+    }
+  }
+}
+
 // 전역 스타일 입력 필드에 이벤트 리스너 추가
 function initGlobalStyleListeners() {
   const elements = getGlobalStyleElements();
@@ -152,10 +177,17 @@ function initGlobalStyleListeners() {
   if (elements.shadowBlur) elements.shadowBlur.addEventListener('input', handleGlobalStyleChange);
   if (elements.shadowColor) elements.shadowColor.addEventListener('input', handleGlobalStyleChange);
   if (elements.shadowOpacity) elements.shadowOpacity.addEventListener('input', handleGlobalStyleChange);
+  if (elements.fontSize) elements.fontSize.addEventListener('input', handleGlobalStyleChange);
   if (elements.letterSpacing) elements.letterSpacing.addEventListener('input', handleGlobalStyleChange);
   if (elements.lineHeight) elements.lineHeight.addEventListener('input', handleGlobalStyleChange);
   if (elements.wordBreak) elements.wordBreak.addEventListener('change', handleGlobalStyleChange);
   if (elements.textAlign) elements.textAlign.addEventListener('change', handleGlobalStyleChange);
+
+  // 배경 이미지 초기화 버튼 이벤트 리스너
+  const bgResetBtn = document.getElementById('bgimg-reset');
+  if (bgResetBtn) {
+    bgResetBtn.addEventListener('click', resetBackgroundImage);
+  }
 
   // 초기 슬라이더 값 표시
   updateSliderDisplays();
@@ -170,6 +202,7 @@ function resetGlobalSettings() {
     shadowBlur: 8,
     shadowColor: '#000000',
     shadowOpacity: 20,
+    fontSize: 16,
     letterSpacing: 0,
     lineHeight: 1.5,
     wordBreak: 'normal',
@@ -186,6 +219,7 @@ function resetGlobalSettings() {
   if (elements.shadowBlur) elements.shadowBlur.value = defaultSettings.shadowBlur;
   if (elements.shadowColor) elements.shadowColor.value = defaultSettings.shadowColor;
   if (elements.shadowOpacity) elements.shadowOpacity.value = defaultSettings.shadowOpacity;
+  if (elements.fontSize) elements.fontSize.value = defaultSettings.fontSize;
   if (elements.letterSpacing) elements.letterSpacing.value = defaultSettings.letterSpacing;
   if (elements.lineHeight) elements.lineHeight.value = defaultSettings.lineHeight;
   if (elements.wordBreak) elements.wordBreak.value = defaultSettings.wordBreak;
