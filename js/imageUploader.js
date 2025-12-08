@@ -1,9 +1,10 @@
 // R2 이미지 업로드 기능
 
 // 이미지 업로드 함수
-async function uploadImageToR2(file) {
+async function uploadImageToR2(file, type = "background") {
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("type", type); // 'background' 또는 'profile'
 
   try {
     const response = await fetch("/api/upload", {

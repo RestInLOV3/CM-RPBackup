@@ -1,52 +1,69 @@
 // 프로필 사진 업로드 처리
 
 // 프로필 사진 업로드 함수
-function uploadProfileImage(targetId) {
+async function uploadProfileImage(targetId) {
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
 
-  input.onchange = function(e) {
+  input.onchange = async function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      const base64Image = event.target.result;
+    // 파일 크기 검증
+    if (file.size > 10 * 1024 * 1024) {
+      alert('파일 크기는 10MB 이하여야 합니다.');
+      return;
+    }
 
-      // AppState에 저장
-      AppState.profileImages[targetId] = base64Image;
+    // 프로필 서클에 업로드 중 표시
+    const profileCircle = document.getElementById(`profile_${targetId}`);
+    if (profileCircle) {
+      profileCircle.style.opacity = '0.5';
+      profileCircle.style.cursor = 'wait';
+    }
+
+    // R2에 업로드
+    const imageUrl = await uploadImageToR2(file, 'profile');
+
+    if (imageUrl) {
+      // AppState에 URL 저장 (base64 대신)
+      AppState.profileImages[targetId] = imageUrl;
 
       // UI 업데이트
-      updateProfileImageUI(targetId, base64Image);
+      updateProfileImageUI(targetId, imageUrl);
 
       // localStorage에 저장
       if (typeof saveFileData === 'function') {
         saveFileData();
       }
-    };
+    }
 
-    reader.readAsDataURL(file);
+    // 업로드 중 표시 해제
+    if (profileCircle) {
+      profileCircle.style.opacity = '1';
+      profileCircle.style.cursor = 'pointer';
+    }
   };
 
   input.click();
 }
 
 // 프로필 사진 UI 업데이트
-function updateProfileImageUI(targetId, base64Image) {
+function updateProfileImageUI(targetId, imageUrl) {
   const profileCircle = document.getElementById(`profile_${targetId}`);
   if (profileCircle) {
-    profileCircle.style.backgroundImage = `url(${base64Image})`;
+    profileCircle.style.backgroundImage = `url(${imageUrl})`;
     profileCircle.style.backgroundSize = 'cover';
     profileCircle.style.backgroundPosition = 'center';
   }
 
   // 미리보기의 프로필 이미지도 업데이트
-  updatePreviewProfileImages(targetId, base64Image);
+  updatePreviewProfileImages(targetId, imageUrl);
 }
 
 // 미리보기의 프로필 이미지 업데이트
-function updatePreviewProfileImages(targetId, base64Image) {
+function updatePreviewProfileImages(targetId, imageUrl) {
   const preview = document.getElementById('preview');
   if (!preview) return;
 
@@ -56,12 +73,12 @@ function updatePreviewProfileImages(targetId, base64Image) {
       const profileImage = container.querySelector('.profile-image');
       if (profileImage) {
         if (profileImage.tagName === 'IMG') {
-          profileImage.src = base64Image;
+          profileImage.src = imageUrl;
         } else {
           // div를 img로 교체
           const img = document.createElement('img');
           img.className = 'profile-image';
-          img.src = base64Image;
+          img.src = imageUrl;
           img.alt = container.dataset.characterName;
           profileImage.parentNode.replaceChild(img, profileImage);
         }

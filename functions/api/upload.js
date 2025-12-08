@@ -12,6 +12,7 @@ export async function onRequestPost(context) {
   try {
     const formData = await request.formData();
     const file = formData.get("file");
+    const type = formData.get("type") || "background"; // 'background' 또는 'profile'
 
     if (!file) {
       return new Response(JSON.stringify({ error: "No file uploaded" }), {
@@ -35,7 +36,8 @@ export async function onRequestPost(context) {
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(2, 8);
     const extension = file.name.split(".").pop();
-    const fileName = `backgrounds/${timestamp}-${randomStr}.${extension}`;
+    const folder = type === "profile" ? "profiles" : "backgrounds";
+    const fileName = `${folder}/${timestamp}-${randomStr}.${extension}`;
 
     // R2에 업로드
     await env.MY_BUCKET.put(fileName, file.stream(), {
