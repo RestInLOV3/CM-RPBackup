@@ -10,173 +10,35 @@ function throttle(func, delay) {
   };
 }
 
-// 드래그 앤 드롭 상태 관리
-const DragState = {
-  draggedElement: null,
-  pressTimer: null,
-  isDragging: false,
-  startY: 0,
-  currentY: 0,
-  placeholder: null,
-};
-
-// 드래그 앤 드롭 초기화
-function initializeDragAndDrop() {
+// SortableJS 초기화
+document.addEventListener("DOMContentLoaded", () => {
   const preview = document.getElementById("preview");
 
-  // 이벤트 위임 방식으로 처리
-  preview.addEventListener("mousedown", handleDragStart);
-  preview.addEventListener("touchstart", handleDragStart, { passive: false });
+  Sortable.create(preview, {
+    animation: 150, // 자연스러운 이동
+    delay: 300, // 길게 눌러야 드래그 시작
+    delayOnTouchOnly: true, // 모바일에서만 long-press
+    ghostClass: "dragging", // 드래그 중인 요소 클래스
+    chosenClass: "dragging",
+    dragClass: "dragging",
+    fallbackTolerance: 5, // 실수로 터치했을 때 오동작 방지
+    forceFallback: true, // 모바일 안정성 증가
+    swapThreshold: 0.65,
+    easing: "cubic-bezier(0.25, 0.8, 0.25, 1)",
 
-  document.addEventListener("mousemove", handleDragMove);
-  document.addEventListener("touchmove", handleDragMove, { passive: false });
+    onEnd: function () {
+      if (typeof updateAfterStyles === "function") updateAfterStyles();
+      if (typeof updateOutputFromPreview === "function")
+        updateOutputFromPreview();
+      if (typeof updateMessageContainers === "function")
+        updateMessageContainers();
+      if (typeof savePreviewHTML === "function") savePreviewHTML();
+    },
 
-  document.addEventListener("mouseup", handleDragEnd);
-  document.addEventListener("touchend", handleDragEnd);
-}
-
-// 드래그 시작 (길게 누르기 감지)
-function handleDragStart(e) {
-  // message-container 찾기
-  const target = e.target.closest(".message-container");
-  if (!target) return;
-
-  // 터치 이벤트 처리
-  const clientY = e.type.includes("touch") ? e.touches[0].clientY : e.clientY;
-
-  // 2초 길게 누르기 타이머 시작
-  DragState.pressTimer = setTimeout(() => {
-    startDragging(target, clientY);
-  }, 500); // 500ms (0.5초)로 조정 - 2초는 너무 길 수 있음
-
-  // 마우스/터치를 떼면 타이머 취소
-  const cancelPress = () => {
-    clearTimeout(DragState.pressTimer);
-    document.removeEventListener("mouseup", cancelPress);
-    document.removeEventListener("touchend", cancelPress);
-  };
-
-  document.addEventListener("mouseup", cancelPress, { once: true });
-  document.addEventListener("touchend", cancelPress, { once: true });
-}
-
-// 드래그 시작
-function startDragging(element, startY) {
-  DragState.isDragging = true;
-  DragState.draggedElement = element;
-  DragState.startY = startY;
-
-  // 드래그 중인 요소 스타일
-  element.style.opacity = "0.5";
-  element.style.cursor = "grabbing";
-  element.style.transition = "none";
-
-  // 플레이스홀더 생성
-  DragState.placeholder = document.createElement("div");
-  DragState.placeholder.className = "drag-placeholder";
-  DragState.placeholder.style.height = element.offsetHeight + "px";
-  DragState.placeholder.style.border = "2px dashed #999";
-  DragState.placeholder.style.borderRadius = "10px";
-  DragState.placeholder.style.margin = "5px 0";
-  DragState.placeholder.style.backgroundColor = "rgba(0, 0, 0, 0.05)";
-
-  element.parentNode.insertBefore(DragState.placeholder, element);
-
-  // 진동 피드백 (모바일)
-  if (navigator.vibrate) {
-    navigator.vibrate(50);
-  }
-}
-
-// 드래그 중
-function handleDragMove(e) {
-  if (!DragState.isDragging || !DragState.draggedElement) return;
-
-  e.preventDefault();
-
-  const clientY = e.type.includes("touch") ? e.touches[0].clientY : e.clientY;
-  DragState.currentY = clientY;
-
-  // 드래그 중인 요소 이동
-  const deltaY = clientY - DragState.startY;
-  DragState.draggedElement.style.transform = `translateY(${deltaY}px)`;
-
-  // 다른 요소들과의 위치 비교
-  const preview = document.getElementById("preview");
-  const containers = Array.from(preview.children).filter(
-    (child) =>
-      child !== DragState.draggedElement && child !== DragState.placeholder
-  );
-
-  let targetElement = null;
-  let insertBefore = true;
-
-  for (const container of containers) {
-    const rect = container.getBoundingClientRect();
-    const midpoint = rect.top + rect.height / 2;
-
-    if (clientY < midpoint && clientY > rect.top) {
-      targetElement = container;
-      insertBefore = true;
-      break;
-    } else if (clientY > midpoint && clientY < rect.bottom) {
-      targetElement = container;
-      insertBefore = false;
-      break;
-    }
-  }
-
-  // 플레이스홀더 위치 업데이트
-  if (targetElement) {
-    if (insertBefore) {
-      preview.insertBefore(DragState.placeholder, targetElement);
-    } else {
-      preview.insertBefore(DragState.placeholder, targetElement.nextSibling);
-    }
-  }
-}
-
-// 드래그 종료
-function handleDragEnd(e) {
-  clearTimeout(DragState.pressTimer);
-
-  if (!DragState.isDragging || !DragState.draggedElement) {
-    return;
-  }
-
-  e.preventDefault();
-
-  const draggedElement = DragState.draggedElement;
-  const placeholder = DragState.placeholder;
-
-  // 원래 스타일 복원
-  draggedElement.style.opacity = "";
-  draggedElement.style.cursor = "";
-  draggedElement.style.transform = "";
-  draggedElement.style.transition = "";
-
-  // 플레이스홀더 위치에 요소 삽입
-  if (placeholder && placeholder.parentNode) {
-    placeholder.parentNode.insertBefore(draggedElement, placeholder);
-    placeholder.remove();
-  }
-
-  // 상태 초기화
-  DragState.isDragging = false;
-  DragState.draggedElement = null;
-  DragState.placeholder = null;
-  DragState.startY = 0;
-  DragState.currentY = 0;
-
-  // 출력 업데이트
-  updateAfterStyles();
-  updateOutputFromPreview();
-
-  // localStorage 저장
-  if (typeof savePreviewHTML === "function") {
-    savePreviewHTML();
-  }
-}
+    // placeholder 처리
+    emptyInsertThreshold: 5,
+  });
+});
 
 // 스타일 업데이트
 function updateAfterStyles() {

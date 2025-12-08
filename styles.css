@@ -584,6 +584,22 @@ button:hover {
 }
 
 /* 메시지 컨테이너 (프로필 + 말풍선) - Grid 레이아웃 */
+
+/* 드래그할 때 생기는 자리 */
+.drag-placeholder {
+  height: 48px;
+  border: 2px dashed #bbb;
+  border-radius: 10px;
+  margin: 8px 0;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* 드래그 중인 요소 스타일 */
+.dragging {
+  opacity: 0.4 !important;
+  transform: scale(0.98);
+}
+
 .message-container.show-profile {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -597,6 +613,7 @@ button:hover {
   grid-template-rows: auto;
   gap: 0px 10px;
   padding-left: 15px;
+  transition: transform 150ms ease, opacity 150ms ease;
 }
 
 .message-container.me {
