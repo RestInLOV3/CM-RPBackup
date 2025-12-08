@@ -239,6 +239,15 @@ button:hover {
 }
 
 #preview::-webkit-scrollbar {
+  width: 8px;
+}
+
+#preview::-webkit-scrollbar-thumb {
+  background-color: rgba(149, 174, 205, 0.399);
+  border-radius: 4px;
+}
+
+#preview::-webkit-scrollbar-button {
   display: none;
 }
 
