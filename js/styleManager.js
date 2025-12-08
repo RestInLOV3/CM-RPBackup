@@ -38,7 +38,7 @@ function updateAfterStyles() {
   align-self: start;
 }
 .character-name{
-  margin:2px 5px;
+  margin:2px 5px !important;
 }
 .speech-bubble-me {
   border-radius: 20px 0px 20px 20px;
