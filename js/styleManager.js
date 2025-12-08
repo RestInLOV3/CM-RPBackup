@@ -188,6 +188,15 @@ body {
   }
 }
 #preview {
+  background-color: ${globalStyles.bgColor};${
+    globalStyles.bgImage && globalStyles.bgImage.trim() !== ""
+      ? `
+    background-image: url('${globalStyles.bgImage}');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;`
+      : ""
+  }
   min-height: 200px;
   max-height: 1100px;
   padding: 15px;
