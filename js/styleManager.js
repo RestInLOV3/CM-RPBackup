@@ -218,6 +218,7 @@ body {
 }
 .message-container .character-name {
   height: 0;
+  margin:2px 5px !important;
 }
 .message-container.show-profile .character-name {
   height: auto;
