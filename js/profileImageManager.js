@@ -40,6 +40,39 @@ function updateProfileImageUI(targetId, base64Image) {
     profileCircle.style.backgroundSize = 'cover';
     profileCircle.style.backgroundPosition = 'center';
   }
+
+  // 미리보기의 프로필 이미지도 업데이트
+  updatePreviewProfileImages(targetId, base64Image);
+}
+
+// 미리보기의 프로필 이미지 업데이트
+function updatePreviewProfileImages(targetId, base64Image) {
+  const preview = document.getElementById('preview');
+  if (!preview) return;
+
+  const containers = preview.querySelectorAll('.message-container');
+  containers.forEach(container => {
+    if (container.dataset.characterId === targetId) {
+      const profileImage = container.querySelector('.profile-image');
+      if (profileImage) {
+        if (profileImage.tagName === 'IMG') {
+          profileImage.src = base64Image;
+        } else {
+          // div를 img로 교체
+          const img = document.createElement('img');
+          img.className = 'profile-image';
+          img.src = base64Image;
+          img.alt = container.dataset.characterName;
+          profileImage.parentNode.replaceChild(img, profileImage);
+        }
+      }
+    }
+  });
+
+  // HTML 출력 업데이트
+  if (typeof updateOutputFromPreview === 'function') {
+    updateOutputFromPreview();
+  }
 }
 
 // 프로필 사진 원형 UI 생성

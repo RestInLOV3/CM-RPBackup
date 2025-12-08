@@ -562,7 +562,17 @@ function addBubble(who) {
   div.dataset.source = "manual"; // 수동 입력 표시
   div.addEventListener("input", updateOutputFromPreview);
 
-  document.getElementById("preview").appendChild(div);
+  // 메시지 컨테이너 생성 (프로필 이미지 + 이름 + 말풍선)
+  const characterId = who + "Character_manual";
+  const characterName = who.toUpperCase();
+  const isMe = who === "me";
+  const container = createMessageContainer(div, characterName, characterId, isMe);
+
+  document.getElementById("preview").appendChild(container);
+
+  // 연속 메시지 감지 및 프로필 표시 업데이트
+  updateMessageContainers();
+
   updateAfterStyles();
   updateOutputFromPreview();
   document.getElementById(who + "Text").value = "";
@@ -577,12 +587,14 @@ function addBubble(who) {
 function addBubbleToPreview(who, text, username, meChar) {
   let bg, color;
   let classSuffix = "";
+  let characterId = "";
 
   if (who === "me") {
     const meColors = getMeColors();
     bg = meColors.bg;
     color = meColors.color;
     classSuffix = "me-auto"; // 자동 생성 ME는 별도 클래스
+    characterId = "meCharacter_auto";
   } else if (who === "you") {
     // username으로 YOU ID 찾아서 해당 색상 가져오기
     const youId = getYouIdByUsername(username);
@@ -591,10 +603,12 @@ function addBubbleToPreview(who, text, username, meChar) {
       bg = colors.bg;
       color = colors.color;
       classSuffix = getYouClassSuffix(youId);
+      characterId = youId;
     } else {
       bg = "#292929";
       color = "#ffffff";
       classSuffix = "you";
+      characterId = "youCharacter";
     }
   }
 
@@ -607,7 +621,11 @@ function addBubbleToPreview(who, text, username, meChar) {
   div.dataset.source = "auto"; // 자동 생성 표시
   div.addEventListener("input", updateOutputFromPreview);
 
-  document.getElementById("preview").appendChild(div);
+  // 메시지 컨테이너 생성 (프로필 이미지 + 이름 + 말풍선)
+  const isMe = who === "me";
+  const container = createMessageContainer(div, username, characterId, isMe);
+
+  document.getElementById("preview").appendChild(container);
 
   // localStorage에 저장
   if (typeof savePreviewHTML === "function") {

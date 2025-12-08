@@ -161,6 +161,48 @@ function initGlobalStyleListeners() {
   updateSliderDisplays();
 }
 
+// 설정 초기화 함수
+function resetGlobalSettings() {
+  // 기본값 정의
+  const defaultSettings = {
+    bgColor: '#ffffff',
+    bgImage: '',
+    shadowBlur: 8,
+    shadowColor: '#000000',
+    shadowOpacity: 20,
+    letterSpacing: 0,
+    lineHeight: 1.5,
+    wordBreak: 'normal',
+    textAlign: 'justify'
+  };
+
+  // AppState 업데이트
+  AppState.globalStyles = { ...defaultSettings };
+
+  // UI 요소에 초기값 적용
+  const elements = getGlobalStyleElements();
+  if (elements.bgColor) elements.bgColor.value = defaultSettings.bgColor;
+  if (elements.bgImage) elements.bgImage.value = defaultSettings.bgImage;
+  if (elements.shadowBlur) elements.shadowBlur.value = defaultSettings.shadowBlur;
+  if (elements.shadowColor) elements.shadowColor.value = defaultSettings.shadowColor;
+  if (elements.shadowOpacity) elements.shadowOpacity.value = defaultSettings.shadowOpacity;
+  if (elements.letterSpacing) elements.letterSpacing.value = defaultSettings.letterSpacing;
+  if (elements.lineHeight) elements.lineHeight.value = defaultSettings.lineHeight;
+  if (elements.wordBreak) elements.wordBreak.value = defaultSettings.wordBreak;
+  if (elements.textAlign) elements.textAlign.value = defaultSettings.textAlign;
+
+  // 슬라이더 값 표시 업데이트
+  updateSliderDisplays();
+
+  // 미리보기에 스타일 적용
+  applyGlobalStylesToPreview();
+
+  // localStorage에 저장
+  if (typeof saveGlobalStyles === 'function') {
+    saveGlobalStyles();
+  }
+}
+
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
   initGlobalStyleListeners();

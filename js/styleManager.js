@@ -27,6 +27,19 @@ function updateAfterStyles() {
   const meColors = getMeColors();
 
   let css = `
+.profile-image{
+  grid-row: 1 / 3;
+  grid-column: 1;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  object-fit: cover;
+  align-self: start;
+}
+.character-name{
+  margin:2px 5px;
+}
 .speech-bubble-me {
   border-radius: 20px 0px 20px 20px;
 }
@@ -43,7 +56,7 @@ function updateAfterStyles() {
   background: ${meColors.bg};
   color: ${meColors.color};
   margin-left: auto;
-  margin-right: 30px;
+  margin-right: 15px;
   border-radius: 20px 0px 20px 20px;
 }
 .speech-bubble-me-auto:after {
@@ -94,7 +107,7 @@ function updateAfterStyles() {
 .speech-bubble-${suffix} {
   background: ${colors.bg};
   color: ${colors.color};
-  margin-left: 30px;
+  margin-left: 15px;
   border-radius: 0px 20px 20px 20px;
 }
 .speech-bubble-${suffix}:after {
@@ -248,7 +261,7 @@ body {
 .speech-bubble-${suffix} {
   background: ${colors.bg};
   color: ${colors.color};
-  margin-left: 30px;
+  margin-left: 15px;
   border-radius: 0px 20px 20px 20px;
 }
 .speech-bubble-${suffix}:after {
@@ -309,7 +322,11 @@ body {
   const previewHTML = Array.from(document.getElementById("preview").children)
     .map((d) => {
       const clone = d.cloneNode(true); // 원본 건드리지 않는 복제본
-      clone.removeAttribute("contenteditable"); // 속성 제거
+
+      // contenteditable 속성 제거
+      const bubbles = clone.querySelectorAll("[contenteditable]");
+      bubbles.forEach((bubble) => bubble.removeAttribute("contenteditable"));
+
       return clone.outerHTML;
     })
     .join("\n");

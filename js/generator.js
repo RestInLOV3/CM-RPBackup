@@ -41,12 +41,16 @@ function generateFromCSV() {
 
     let bg, color;
     let classSuffix = "";
+    let characterId = "";
+    let isMe = false;
 
     if (username === meChar) {
       const meColors = getMeColors();
       bg = meColors.bg;
       color = meColors.color;
       classSuffix = "me-auto"; // 자동 생성 ME는 별도 클래스
+      characterId = "meCharacter_auto";
+      isMe = true;
     } else if (youChars.includes(username)) {
       // username으로 YOU ID 찾아서 해당 색상 가져오기
       const youId = getYouIdByUsername(username);
@@ -55,10 +59,12 @@ function generateFromCSV() {
         bg = colors.bg;
         color = colors.color;
         classSuffix = getYouClassSuffix(youId);
+        characterId = youId;
       } else {
         bg = "#292929";
         color = "#ffffff";
         classSuffix = "you";
+        characterId = "youCharacter";
       }
     } else {
       return; // 선택된 캐릭터가 아니면 스킵
@@ -73,8 +79,14 @@ function generateFromCSV() {
     div.dataset.source = "auto"; // 자동 생성 표시
     div.addEventListener("input", updateOutputFromPreview);
 
-    document.getElementById("preview").appendChild(div);
+    // 메시지 컨테이너 생성 (프로필 이미지 + 이름 + 말풍선)
+    const container = createMessageContainer(div, username, characterId, isMe);
+
+    document.getElementById("preview").appendChild(container);
   });
+
+  // 연속 메시지 감지 및 프로필 표시 업데이트
+  updateMessageContainers();
 
   updateAfterStyles();
   updateOutputFromPreview();
@@ -112,12 +124,16 @@ function generateFromTXT() {
 
     let bg, color;
     let classSuffix = "";
+    let characterId = "";
+    let isMe = false;
 
     if (username === meChar) {
       const meColors = getMeColors();
       bg = meColors.bg;
       color = meColors.color;
       classSuffix = "me-auto"; // 자동 생성 ME는 별도 클래스
+      characterId = "meCharacter_auto";
+      isMe = true;
     } else if (youChars.includes(username)) {
       // username으로 YOU ID 찾아서 해당 색상 가져오기
       const youId = getYouIdByUsername(username);
@@ -126,10 +142,12 @@ function generateFromTXT() {
         bg = colors.bg;
         color = colors.color;
         classSuffix = getYouClassSuffix(youId);
+        characterId = youId;
       } else {
         bg = "#292929";
         color = "#ffffff";
         classSuffix = "you";
+        characterId = "youCharacter";
       }
     } else {
       return; // 선택된 캐릭터가 아니면 스킵
@@ -144,8 +162,14 @@ function generateFromTXT() {
     div.dataset.source = "auto"; // 자동 생성 표시
     div.addEventListener("input", updateOutputFromPreview);
 
-    document.getElementById("preview").appendChild(div);
+    // 메시지 컨테이너 생성 (프로필 이미지 + 이름 + 말풍선)
+    const container = createMessageContainer(div, username, characterId, isMe);
+
+    document.getElementById("preview").appendChild(container);
   });
+
+  // 연속 메시지 감지 및 프로필 표시 업데이트
+  updateMessageContainers();
 
   updateAfterStyles();
   updateOutputFromPreview();
@@ -263,6 +287,9 @@ function generateFromXLSX() {
       }
     });
   });
+
+  // 연속 메시지 감지 및 프로필 표시 업데이트
+  updateMessageContainers();
 
   updateAfterStyles();
   updateOutputFromPreview();

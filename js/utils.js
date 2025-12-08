@@ -108,3 +108,72 @@ function copyCode() {
     setTimeout(() => (btn.innerText = original), 1500);
   });
 }
+
+// 메시지 컨테이너 생성 (프로필 이미지 + 이름 + 말풍선)
+function createMessageContainer(bubbleElement, characterName, characterId, isMe) {
+  const container = document.createElement('div');
+  container.className = 'message-container ' + (isMe ? 'me' : 'you');
+
+  // 프로필 이미지가 있는지 확인
+  const profileImage = AppState.profileImages[characterId];
+
+  // 프로필 이미지
+  if (profileImage) {
+    const img = document.createElement('img');
+    img.className = 'profile-image';
+    img.src = profileImage;
+    img.alt = characterName;
+    container.appendChild(img);
+  } else {
+    // 기본 프로필 원형
+    const defaultProfile = document.createElement('div');
+    defaultProfile.className = 'profile-image';
+    defaultProfile.style.backgroundColor = '#e0e0e0';
+    container.appendChild(defaultProfile);
+  }
+
+  // 캐릭터 이름
+  const nameDiv = document.createElement('div');
+  nameDiv.className = 'character-name';
+  nameDiv.textContent = characterName;
+  container.appendChild(nameDiv);
+
+  // 말풍선
+  container.appendChild(bubbleElement);
+
+  // 메타데이터 저장
+  container.dataset.characterId = characterId;
+  container.dataset.characterName = characterName;
+  container.dataset.isMe = isMe ? 'true' : 'false';
+
+  return container;
+}
+
+// 연속된 메시지인지 확인하고 프로필 표시 여부 결정
+function updateMessageContainers() {
+  const preview = document.getElementById('preview');
+  const containers = preview.querySelectorAll('.message-container');
+
+  let previousCharacterId = null;
+
+  containers.forEach((container) => {
+    const currentCharacterId = container.dataset.characterId;
+    const profileImage = container.querySelector('.profile-image');
+    const characterName = container.querySelector('.character-name');
+
+    // 이전 메시지와 같은 캐릭터인지 확인
+    if (currentCharacterId === previousCharacterId) {
+      // 연속된 메시지: 프로필과 이름 숨김
+      if (profileImage) profileImage.style.visibility = 'hidden';
+      if (characterName) characterName.style.visibility = 'hidden';
+      container.classList.remove('show-profile');
+    } else {
+      // 새로운 캐릭터: 프로필과 이름 표시
+      if (profileImage) profileImage.style.visibility = 'visible';
+      if (characterName) characterName.style.visibility = 'visible';
+      container.classList.add('show-profile');
+    }
+
+    previousCharacterId = currentCharacterId;
+  });
+}
