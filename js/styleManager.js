@@ -31,15 +31,8 @@ function updateAfterStyles() {
 
   let css = `
 body {
-  background-color: ${globalStyles.bgColor};${
-    globalStyles.bgImage && globalStyles.bgImage.trim() !== ""
-      ? `
-  background-image: url('${globalStyles.bgImage}');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;`
-      : ""
-  }
+  margin: 0;
+  padding: 0;
 }
 .body-container {
   background-color: ${globalStyles.bgColor};${
