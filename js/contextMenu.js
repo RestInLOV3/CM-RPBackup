@@ -51,7 +51,9 @@ function handleContextMenu(e) {
   }
 
   e.preventDefault();
-  currentTargetBubble = e.target;
+
+  // 타겟은 말풍선 자체가 아니라 부모 message-container로 저장
+  currentTargetBubble = e.target.closest('.message-container');
 
   // 메뉴를 먼저 표시해서 크기를 측정
   contextMenu.style.display = "block";
@@ -93,12 +95,17 @@ function handleMenuAction(action) {
 }
 
 // 말풍선 추가
-function insertBubble(targetBubble, position) {
-  // 타겟 말풍선의 클래스 복사 (speech-bubble-me, speech-bubble-you1 등)
+function insertBubble(targetContainer, position) {
+  // 타겟 컨테이너에서 정보 추출
+  const characterId = targetContainer.dataset.characterId;
+  const characterName = targetContainer.dataset.characterName;
+  const isMe = targetContainer.dataset.isMe === 'true';
+
+  // 타겟 컨테이너의 말풍선 찾기
+  const targetBubble = targetContainer.querySelector('.speech-bubble');
   const targetClasses = targetBubble.className;
   const targetBg = targetBubble.style.backgroundColor;
   const targetColor = targetBubble.style.color;
-  const targetSource = targetBubble.dataset.source;
 
   // 새 말풍선 생성
   const newBubble = document.createElement("div");
@@ -107,19 +114,27 @@ function insertBubble(targetBubble, position) {
   newBubble.contentEditable = true;
   newBubble.style.backgroundColor = targetBg;
   newBubble.style.color = targetColor;
-  newBubble.dataset.source = targetSource || "manual";
+  newBubble.dataset.source = "manual";
   newBubble.addEventListener("input", updateOutputFromPreview);
 
-  // 위치에 따라 삽입
+  // 새 메시지 컨테이너 생성 (프로필 이미지 + 이름 + 말풍선)
+  const newContainer = createMessageContainer(newBubble, characterName, characterId, isMe);
+
+  // 위치에 따라 컨테이너 삽입
   if (position === "before") {
-    targetBubble.parentNode.insertBefore(newBubble, targetBubble);
+    targetContainer.parentNode.insertBefore(newContainer, targetContainer);
   } else {
-    targetBubble.parentNode.insertBefore(newBubble, targetBubble.nextSibling);
+    targetContainer.parentNode.insertBefore(newContainer, targetContainer.nextSibling);
   }
 
   // 스타일 및 출력 업데이트
   updateAfterStyles();
   updateOutputFromPreview();
+
+  // 메시지 컨테이너 업데이트 (프로필 갱신)
+  if (typeof updateMessageContainers === "function") {
+    updateMessageContainers();
+  }
 
   // localStorage에 저장
   if (typeof savePreviewHTML === "function") {
@@ -138,13 +153,18 @@ function insertBubble(targetBubble, position) {
 }
 
 // 말풍선 삭제
-function deleteBubble(targetBubble) {
+function deleteBubble(targetContainer) {
   if (confirm("이 말풍선을 삭제하시겠습니까?")) {
-    targetBubble.remove();
+    targetContainer.remove();
 
     // 스타일 및 출력 업데이트
     updateAfterStyles();
     updateOutputFromPreview();
+
+    // 메시지 컨테이너 업데이트 (프로필 갱신)
+    if (typeof updateMessageContainers === "function") {
+      updateMessageContainers();
+    }
 
     // localStorage에 저장
     if (typeof savePreviewHTML === "function") {
