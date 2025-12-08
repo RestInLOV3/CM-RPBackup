@@ -29,6 +29,43 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  // 이름 입력 실시간 업데이트
+  ["me", "you"].forEach((who) => {
+    const nameElement = document.getElementById(who + "Name");
+
+    if (nameElement) {
+      nameElement.addEventListener("input", () => {
+        const name = nameElement.value.trim() || who.toUpperCase();
+
+        // 미리보기의 모든 메시지 컨테이너 순회
+        const preview = document.getElementById("preview");
+        const containers = preview.querySelectorAll(".message-container");
+
+        containers.forEach((container) => {
+          // speech-bubble 찾기
+          const bubble = container.querySelector(".speech-bubble");
+          if (!bubble || bubble.dataset.source !== "manual") return;
+
+          // ME/YOU 확인
+          const isMe = container.dataset.isMe === "true";
+          if ((who === "me" && isMe) || (who === "you" && !isMe)) {
+            // character-name 업데이트
+            const characterName = container.querySelector(".character-name");
+            if (characterName) {
+              characterName.textContent = name;
+            }
+
+            // 컨테이너의 dataset 업데이트
+            container.dataset.characterName = name;
+          }
+        });
+
+        // HTML 출력 업데이트
+        updateOutputFromPreview();
+      });
+    }
+  });
+
   // 색상 즉시 반영 (수동 입력용 - manual 소스만)
   ["meBg", "meColor", "youBg", "youColor"].forEach((id) => {
     const element = document.getElementById(id);

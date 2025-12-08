@@ -549,7 +549,15 @@ function updateAddYouButtonVisibility() {
 // 말풍선 추가 (수동 입력)
 function addBubble(who) {
   let text = document.getElementById(who + "Text").value.trim();
+  let name = document.getElementById(who + "Name").value.trim();
+
   if (!text) return;
+
+  // 이름이 비어있으면 기본값 사용
+  if (!name) {
+    name = who.toUpperCase();
+  }
+
   let bg = document.getElementById(who + "Bg").value;
   let color = document.getElementById(who + "Color").value;
 
@@ -564,9 +572,14 @@ function addBubble(who) {
 
   // 메시지 컨테이너 생성 (프로필 이미지 + 이름 + 말풍선)
   const characterId = who + "Character_manual";
-  const characterName = who.toUpperCase();
+  const characterName = name; // 입력된 이름 사용
   const isMe = who === "me";
-  const container = createMessageContainer(div, characterName, characterId, isMe);
+  const container = createMessageContainer(
+    div,
+    characterName,
+    characterId,
+    isMe
+  );
 
   document.getElementById("preview").appendChild(container);
 
@@ -575,6 +588,8 @@ function addBubble(who) {
 
   updateAfterStyles();
   updateOutputFromPreview();
+
+  // 텍스트만 초기화 (이름은 유지)
   document.getElementById(who + "Text").value = "";
 
   // localStorage에 저장

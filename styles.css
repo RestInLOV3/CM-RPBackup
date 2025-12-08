@@ -372,13 +372,6 @@ button:hover {
   gap: 15px;
 }
 
-.meTextContainer,
-.youTextContainer {
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-}
-
 /* 파일 업로드 섹션 */
 .csv-upload-section {
   display: flex;
@@ -537,9 +530,34 @@ button:hover {
 }
 
 /* 수동 입력 스타일 */
+.meTextContainer,
+.youTextContainer {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-areas:
+    "a . ."
+    "b b c";
+  gap: 8px;
+}
+
+.meTextContainer button,
+.youTextContainer button {
+  grid-area: c;
+}
+#meName,
+#youName {
+  max-width: 200px;
+  min-height: 5px;
+  grid-area: a;
+  padding: 5px 10px;
+  align-content: center;
+  resize: none;
+}
+
 #meText,
 #youText {
   min-height: 100px;
+  grid-area: b;
 }
 
 /* 컨텍스트 메뉴 커스텀 스타일 */
