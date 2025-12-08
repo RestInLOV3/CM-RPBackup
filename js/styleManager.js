@@ -26,7 +26,34 @@ function updateAfterStyles() {
   // ME 색상 (자동 생성용)
   const meColors = getMeColors();
 
+  // 전역 스타일 가져오기
+  const globalStyles = getGlobalStyles();
+
   let css = `
+body {
+  background-color: ${globalStyles.bgColor};${
+    globalStyles.bgImage && globalStyles.bgImage.trim() !== ""
+      ? `
+  background-image: url('${globalStyles.bgImage}');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;`
+      : ""
+  }
+}
+.body-container {
+  background-color: ${globalStyles.bgColor};${
+    globalStyles.bgImage && globalStyles.bgImage.trim() !== ""
+      ? `
+  background-image: url('${globalStyles.bgImage}');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;`
+      : ""
+  }
+  padding: 20px;
+  min-height: 100vh;
+}
 .profile-image{
   grid-row: 1 / 3;
   grid-column: 1;
@@ -177,6 +204,20 @@ function updateOutputFromPreview() {
   let styleBlock = `
 <style>
 body {
+  margin: 0;
+  padding: 0;
+  background-color: ${globalStyles.bgColor};${
+    globalStyles.bgImage && globalStyles.bgImage.trim() !== ""
+      ? `
+  background-image: url('${globalStyles.bgImage}');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;`
+      : ""
+  }
+}
+.body-container {
   background-color: ${globalStyles.bgColor};${
     globalStyles.bgImage && globalStyles.bgImage.trim() !== ""
       ? `
@@ -186,25 +227,8 @@ body {
   background-repeat: no-repeat;`
       : ""
   }
-}
-#preview {
-  background-color: ${globalStyles.bgColor};${
-    globalStyles.bgImage && globalStyles.bgImage.trim() !== ""
-      ? `
-    background-image: url('${globalStyles.bgImage}');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;`
-      : ""
-  }
-  min-height: 200px;
-  max-height: 1100px;
-  padding: 15px;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-  overflow-y: auto;
-  overflow-x: hidden;
+  padding: 20px;
+  min-height: 100vh;
 }
 .message-container.show-profile {
   display: grid;
@@ -402,7 +426,6 @@ body {
 
   styleBlock += `
 </style>
-<br><br>
 `;
 
   const previewHTML = Array.from(document.getElementById("preview").children)
@@ -417,7 +440,10 @@ body {
     })
     .join("\n");
 
-  document.getElementById("output").value = styleBlock + previewHTML + "\n";
+  // body-container로 감싸기
+  const wrappedHTML = `<div class="body-container">\n${previewHTML}\n</div>`;
+
+  document.getElementById("output").value = styleBlock + wrappedHTML + "\n";
 
   // localStorage에 저장 (디바운싱: 500ms 후에 저장)
   if (typeof savePreviewHTML === "function") {
