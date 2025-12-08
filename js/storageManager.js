@@ -61,28 +61,30 @@ function savePreviewHTML() {
     if (preview) {
       const containers = Array.from(preview.children).map((container) => {
         // message-container인 경우
-        if (container.classList.contains('message-container')) {
-          const bubble = container.querySelector('.speech-bubble');
-          const profileAndName = container.querySelector('.profile-and-name');
+        if (container.classList.contains("message-container")) {
+          const bubble = container.querySelector(".speech-bubble");
+          const profileAndName = container.querySelector(".profile-and-name");
 
           return {
-            type: 'message-container',
+            type: "message-container",
             characterId: container.dataset.characterId,
             characterName: container.dataset.characterName,
-            isMe: container.dataset.isMe === 'true',
-            showProfile: profileAndName ? profileAndName.style.visibility !== 'hidden' : true,
+            isMe: container.dataset.isMe === "true",
+            showProfile: profileAndName
+              ? profileAndName.style.visibility !== "hidden"
+              : true,
             bubble: {
               className: bubble.className,
               text: bubble.innerText,
               bgColor: bubble.style.backgroundColor,
               color: bubble.style.color,
               source: bubble.dataset.source || "manual",
-            }
+            },
           };
         } else {
           // 이전 버전 호환성 (말풍선만 있는 경우)
           return {
-            type: 'legacy',
+            type: "legacy",
             className: container.className,
             text: container.innerText,
             bgColor: container.style.backgroundColor,
@@ -91,7 +93,10 @@ function savePreviewHTML() {
           };
         }
       });
-      localStorage.setItem(STORAGE_KEYS.PREVIEW_HTML, JSON.stringify(containers));
+      localStorage.setItem(
+        STORAGE_KEYS.PREVIEW_HTML,
+        JSON.stringify(containers)
+      );
     }
   } catch (e) {
     console.error("미리보기 HTML 저장 실패:", e);
@@ -261,10 +266,13 @@ function loadPreviewHTML() {
       if (preview && containers.length > 0) {
         preview.innerHTML = "";
 
-        console.log("[loadPreviewHTML] 복원할 컨테이너 개수:", containers.length);
+        console.log(
+          "[loadPreviewHTML] 복원할 컨테이너 개수:",
+          containers.length
+        );
 
         containers.forEach((containerData, index) => {
-          if (containerData.type === 'message-container') {
+          if (containerData.type === "message-container") {
             // 새로운 형식: message-container
             const bubble = document.createElement("div");
             bubble.className = containerData.bubble.className;
@@ -302,13 +310,25 @@ function loadPreviewHTML() {
             div.addEventListener("input", updateOutputFromPreview);
 
             // legacy 데이터를 새 형식으로 변환
-            const characterId = containerData.source === 'manual'
-              ? (containerData.className.includes('me') ? 'meCharacter_manual' : 'youCharacter_manual')
-              : (containerData.className.includes('me') ? 'meCharacter_auto' : 'youCharacter');
-            const characterName = containerData.className.includes('me') ? 'ME' : 'YOU';
-            const isMe = containerData.className.includes('me');
+            const characterId =
+              containerData.source === "manual"
+                ? containerData.className.includes("me")
+                  ? "meCharacter_manual"
+                  : "youCharacter_manual"
+                : containerData.className.includes("me")
+                ? "meCharacter_auto"
+                : "youCharacter";
+            const characterName = containerData.className.includes("me")
+              ? "ME"
+              : "YOU";
+            const isMe = containerData.className.includes("me");
 
-            const container = createMessageContainer(div, characterName, characterId, isMe);
+            const container = createMessageContainer(
+              div,
+              characterName,
+              characterId,
+              isMe
+            );
             preview.appendChild(container);
 
             console.log(`[loadPreviewHTML] Legacy 말풍선 #${index}:`, {
