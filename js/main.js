@@ -94,12 +94,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
         containers.forEach((container) => {
           const bubble = container.querySelector(".speech-bubble");
-          if (!bubble || bubble.dataset.source !== "manual") return;
+          if (!bubble) return;
 
+          // 자동 생성 말풍선 제외 (me-auto, you1, you2, you3 등)
+          if (bubble.classList.contains("speech-bubble-me-auto")) return;
+          if (bubble.className.match(/speech-bubble-you\d+/)) return;
+
+          // 수동 입력 ME 말풍선 업데이트
           if (bubble.classList.contains("speech-bubble-me")) {
             bubble.style.backgroundColor = document.getElementById("meBg").value;
             bubble.style.color = document.getElementById("meColor").value;
-          } else if (bubble.classList.contains("speech-bubble-you")) {
+          }
+          // 수동 입력 YOU 말풍선 업데이트
+          else if (bubble.classList.contains("speech-bubble-you")) {
             bubble.style.backgroundColor = document.getElementById("youBg").value;
             bubble.style.color = document.getElementById("youColor").value;
           }
