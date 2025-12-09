@@ -266,8 +266,8 @@ function updateOutputFromPreview() {
 .profile-image {
   grid-row: 1 / 3;
   grid-column: 1;
-  width: 40px;
-  height: 40px;
+  width: 40px !important;
+  height: 40px !important;
   border-radius: 50%;
   background-color: #e0e0e0;
   object-fit: cover;
