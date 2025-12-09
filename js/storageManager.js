@@ -6,6 +6,7 @@ const STORAGE_KEYS = {
   PREVIEW_HTML: "chatBackup_previewHTML",
   FILE_DATA: "chatBackup_fileData",
   PROFILE_IMAGES: "chatBackup_profileImages",
+  PROFILE_COLORS: "chatBackup_profileColors",
 };
 
 // 전역 스타일 저장
@@ -165,6 +166,12 @@ function saveFileData() {
     localStorage.setItem(
       STORAGE_KEYS.PROFILE_IMAGES,
       JSON.stringify(AppState.profileImages || {})
+    );
+
+    // 프로필 색상 저장
+    localStorage.setItem(
+      STORAGE_KEYS.PROFILE_COLORS,
+      JSON.stringify(AppState.profileColors || {})
     );
   } catch (e) {
     console.error("파일 데이터 저장 실패:", e);
@@ -579,6 +586,25 @@ function loadFileData() {
             }
           } catch (e) {
             console.error("프로필 사진 복원 실패:", e);
+          }
+        }
+
+        // 프로필 색상 복원
+        const savedColors = localStorage.getItem(STORAGE_KEYS.PROFILE_COLORS);
+        if (savedColors) {
+          try {
+            AppState.profileColors = JSON.parse(savedColors);
+            // UI 업데이트 (이미지가 없는 경우만)
+            for (const targetId in AppState.profileColors) {
+              if (!AppState.profileImages[targetId] && typeof updateProfileColorUI === "function") {
+                updateProfileColorUI(
+                  targetId,
+                  AppState.profileColors[targetId]
+                );
+              }
+            }
+          } catch (e) {
+            console.error("프로필 색상 복원 실패:", e);
           }
         }
 

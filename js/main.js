@@ -16,6 +16,24 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  // 수동 입력 프로필 색상 복원
+  const savedColors = localStorage.getItem('chatBackup_profileColors');
+  if (savedColors) {
+    try {
+      const colors = JSON.parse(savedColors);
+      // 이미지가 없는 경우만 색상 적용
+      const images = savedImages ? JSON.parse(savedImages) : {};
+      if (colors.meCharacter_manual && !images.meCharacter_manual) {
+        updateProfileColorUI('meCharacter_manual', colors.meCharacter_manual);
+      }
+      if (colors.youCharacter_manual && !images.youCharacter_manual) {
+        updateProfileColorUI('youCharacter_manual', colors.youCharacter_manual);
+      }
+    } catch (e) {
+      console.error('수동 입력 프로필 색상 복원 실패:', e);
+    }
+  }
+
   // Enter 키 처리 (수동 입력)
   ["me", "you"].forEach((who) => {
     const textElement = document.getElementById(who + "Text");
