@@ -141,9 +141,9 @@ function parseTXT(text) {
   let startParsing = false;
 
   // 형식 1 이름 추론을 위한 변수
-  let format1NameCandidate = null;
-  let format1SampleCount = 0;
-  const FORMAT1_SAMPLE_LIMIT = 5;
+  let format1Samples = []; // 샘플들을 저장
+  const FORMAT1_SAMPLE_LIMIT = 10; // 샘플 수 증가
+  let format1Messages = []; // 형식 1 메시지 임시 저장
 
   // 카카오톡 형식 감지: '운영정책 보기'가 있으면 해당 라인 이후부터 파싱
   const hasOperationPolicy = lines.some((line) =>
@@ -153,81 +153,82 @@ function parseTXT(text) {
   for (const line of lines) {
     const trimmedLine = line.trim();
 
-    // 빈 줄은 스킵
-    if (trimmedLine === "") {
+    // 빈 줄, URL 등 스킵
+    if (trimmedLine === "") continue;
+    if (trimmedLine.startsWith("http://") || trimmedLine.startsWith("https://"))
+      continue;
+
+    // 카카오톡 형식, 시스템 메시지 처리
+    if (hasOperationPolicy && !startParsing) {
+      if (trimmedLine.includes("운영정책 보기")) startParsing = true;
       continue;
     }
+    if (isSystemMessage(trimmedLine)) continue;
 
-    // URL 라인은 스킵
-    if (
-      trimmedLine.startsWith("http://") ||
-      trimmedLine.startsWith("https://")
-    ) {
-      continue;
-    }
-
-    // 카카오톡 형식: '운영정책 보기' 이후부터 파싱 시작
-    if (hasOperationPolicy) {
-      if (!startParsing) {
-        if (trimmedLine.includes("운영정책 보기")) {
-          startParsing = true;
-        }
-        continue; // '운영정책 보기' 전까지는 모두 스킵
-      }
-    }
-
-    // 시스템 메시지 및 날짜 구분선 필터링
-    if (isSystemMessage(trimmedLine)) {
-      continue;
-    }
-
-    // 각 형식 매칭 시도 (우선순위 순서)
+    // 각 형식 매칭 시도
     const parsed =
-      tryParseFormat3(trimmedLine) || // [이름] [시간] 내용
-      tryParseFormat2(trimmedLine) || // 2025. 7. 18. 오후 9:07, 이름 : 내용
-      tryParseNewFormat(trimmedLine) || // 2024년 8월 28일 오전 12:06, 릴 : 내용
-      tryParseOldFormat(trimmedLine) || // 2025년 3월 25일 오전 9:09:닉네임:내용
-      tryParseFormat1(trimmedLine, format1NameCandidate, format1SampleCount); // 2025년 8월 14일 오전 9:35 이름 내용
+      tryParseFormat3(trimmedLine) ||
+      tryParseFormat2(trimmedLine) ||
+      tryParseNewFormat(trimmedLine) ||
+      tryParseOldFormat(trimmedLine) ||
+      tryParseFormat1(trimmedLine);
 
     if (parsed) {
-      // 형식 1의 경우 이름 후보 업데이트
-      if (parsed.isFormat1) {
-        const result = updateFormat1NameCandidate(
-          parsed.restAfterDate,
-          format1NameCandidate,
-          format1SampleCount
-        );
-        format1NameCandidate = result.candidate;
-        format1SampleCount = result.count;
-
-        // 확정된 이름으로 파싱
-        if (
-          format1SampleCount >= FORMAT1_SAMPLE_LIMIT &&
-          format1NameCandidate &&
-          format1NameCandidate.length > 0
-        ) {
-          const nameLength = format1NameCandidate.length;
-          const words = parsed.restAfterDate.split(/\s+/);
-          parsed.username = format1NameCandidate.join(" ");
-          parsed.message = words.slice(nameLength).join(" ");
-        }
-      }
-
       // 이전 메시지 저장
       if (currentMessage && currentMessage.username && currentMessage.message) {
+        const pushIndex = AppState.txtData.length; // push 전 길이 = push될 인덱스
         AppState.txtData.push({
           username: currentMessage.username,
           message: currentMessage.message.trim(),
         });
+
+        console.log(
+          `[DEBUG] 메시지 push: 인덱스=${pushIndex}, 이름="${currentMessage.username}", 형식1=${currentMessage.isFormat1}`
+        );
+
+        // ✅ 이전 메시지가 형식1이었다면 인덱스 저장
+        if (currentMessage.isFormat1) {
+          const lastFormat1Index = format1Messages.length - 1;
+          if (lastFormat1Index >= 0 && format1Messages[lastFormat1Index]) {
+            format1Messages[lastFormat1Index].dataIndex = pushIndex;
+            console.log(
+              `[DEBUG] 인덱스 설정: format1Messages[${lastFormat1Index}].dataIndex = ${pushIndex}`
+            );
+          } else {
+            console.log(
+              `[DEBUG] 인덱스 설정 실패: format1Messages[${lastFormat1Index}]가 없음`
+            );
+          }
+        }
       }
 
       // 새 메시지 시작
       currentMessage = {
         username: parsed.username.trim(),
         message: parsed.message.trim(),
+        isFormat1: parsed.isFormat1, // 형식1 플래그 보존
       };
+
+      // 형식 1의 경우 샘플 수집 및 임시 저장
+      if (parsed.isFormat1) {
+        if (format1Samples.length < FORMAT1_SAMPLE_LIMIT) {
+          format1Samples.push(parsed.restAfterDate);
+        }
+
+        // ✅ 정보만 저장
+        const newIndex = format1Messages.length;
+        format1Messages.push({
+          restAfterDate: parsed.restAfterDate,
+          dataIndex: null,
+        });
+        console.log(
+          `[DEBUG] 형식1 메시지 추가: format1Messages[${newIndex}], 첫 단어="${
+            parsed.restAfterDate.split(/\s+/)[0]
+          }"`
+        );
+      }
     } else {
-      // 날짜 패턴이 없으면 이전 메시지에 추가 (줄바꿈 포함)
+      // 줄바꿈 처리
       if (currentMessage && trimmedLine !== "") {
         currentMessage.message += "\n" + trimmedLine;
       }
@@ -236,15 +237,74 @@ function parseTXT(text) {
 
   // 마지막 메시지 저장
   if (currentMessage && currentMessage.username && currentMessage.message) {
+    const pushIndex = AppState.txtData.length;
     AppState.txtData.push({
       username: currentMessage.username,
       message: currentMessage.message.trim(),
     });
+
+    console.log(
+      `[DEBUG] 마지막 메시지 push: 인덱스=${pushIndex}, 이름="${currentMessage.username}", 형식1=${currentMessage.isFormat1}`
+    );
+
+    // ✅ 마지막 메시지가 형식1이었다면 인덱스 저장
+    if (currentMessage.isFormat1) {
+      const lastFormat1Index = format1Messages.length - 1;
+      if (lastFormat1Index >= 0 && format1Messages[lastFormat1Index]) {
+        format1Messages[lastFormat1Index].dataIndex = pushIndex;
+        console.log(
+          `[DEBUG] 마지막 인덱스 설정: format1Messages[${lastFormat1Index}].dataIndex = ${pushIndex}`
+        );
+      } else {
+        console.log(
+          `[DEBUG] 마지막 인덱스 설정 실패: format1Messages[${lastFormat1Index}]가 없음`
+        );
+      }
+    }
   }
 
-  // 형식 1 이름이 확정된 경우, 다시 파싱하여 정확한 이름 적용
-  if (format1NameCandidate && format1NameCandidate.length > 0) {
-    refineFormat1Names(format1NameCandidate);
+  // 형식 1 이름 패턴 분석
+  if (format1Samples.length > 0) {
+    console.log(`[DEBUG] format1Messages 개수: ${format1Messages.length}`);
+    format1Messages.forEach((msg, idx) => {
+      console.log(
+        `[DEBUG] format1Messages[${idx}].dataIndex = ${msg.dataIndex}`
+      );
+    });
+
+    const namePatterns = analyzeFormat1NamePatterns(format1Samples);
+    console.log("[Format1] 확정된 이름 패턴들:", namePatterns);
+
+    if (namePatterns.length > 0) {
+      refineFormat1MessagesWithPatterns(namePatterns, format1Messages);
+    }
+  }
+
+  // 마지막 메시지 저장
+  if (currentMessage && currentMessage.username && currentMessage.message) {
+    const messageObj = {
+      username: currentMessage.username,
+      message: currentMessage.message.trim(),
+    };
+    AppState.txtData.push(messageObj);
+
+    // 마지막 메시지가 형식1이었다면 참조 업데이트
+    if (currentMessage.isFormat1) {
+      const lastFormat1 = format1Messages[format1Messages.length - 1];
+      if (lastFormat1) {
+        lastFormat1.dataIndex = AppState.txtData.length - 1; // 방금 push된 인덱스
+      }
+    }
+  }
+
+  // 형식 1 이름 패턴 분석
+  if (format1Samples.length > 0) {
+    const namePatterns = analyzeFormat1NamePatterns(format1Samples);
+    console.log("[Format1] 확정된 이름 패턴들:", namePatterns);
+
+    if (namePatterns.length > 0) {
+      refineFormat1MessagesWithPatterns(namePatterns, format1Messages);
+    }
   }
 
   // 캐릭터 이름 추출 및 매핑 생성
@@ -333,87 +393,174 @@ function tryParseOldFormat(line) {
 }
 
 // 형식 1: 2025년 8월 14일 오전 9:35 이름 내용
-function tryParseFormat1(line, nameCandidate, sampleCount) {
+// 날짜 직후에 콤마나 콜론이 바로 오는 경우만 다른 형식으로 간주
+function tryParseFormat1(line) {
   const match = line.match(
     /^(\d+년 \d+월 \d+일\s+(?:오전|오후)\s+\d+:\d+)\s+(.*)$/
   );
-  if (match) {
-    const restAfterDate = match[2].trim();
-    const words = restAfterDate.split(/\s+/);
 
-    if (words.length === 0) {
+  if (!match) {
+    return null;
+  }
+
+  const dateTimePart = match[1];
+  const restAfterDate = match[2].trim();
+
+  // 날짜 바로 뒤에 콤마가 오는 경우 (형식 2, 새 형식)
+  // 예: "2024년 8월 28일 오전 12:06, 릴 : 내용"
+  if (/^,/.test(restAfterDate)) {
+    return null;
+  }
+
+  // 날짜 바로 뒤에 콜론이 오는 경우 (기존 형식)
+  // 예: "2025년 3월 25일 오전 9:09:닉네임:내용"
+  if (/^:/.test(restAfterDate)) {
+    return null;
+  }
+
+  // 이름 부분에 콜론이 포함되어 있고, 그 앞부분이 짧은 경우 (다른 형식일 가능성)
+  // 예: "2024년 8월 28일 오전 12:06, 릴 : 내용" (이미 위에서 걸러지지만 추가 안전장치)
+  const firstColonIndex = restAfterDate.indexOf(":");
+  if (firstColonIndex !== -1 && firstColonIndex < 20) {
+    // 콜론이 앞쪽(20자 이내)에 있으면 "이름 : 내용" 형식일 가능성
+    const beforeColon = restAfterDate.substring(0, firstColonIndex).trim();
+    const afterColon = restAfterDate.substring(firstColonIndex + 1).trim();
+
+    // 콜론 앞부분에 공백이 없거나 1-2단어 정도면 다른 형식
+    const wordsBeforeColon = beforeColon.split(/\s+/);
+    if (wordsBeforeColon.length <= 2) {
       return null;
     }
-
-    // 임시 파싱 (나중에 수정될 수 있음)
-    return {
-      isFormat1: true,
-      restAfterDate: restAfterDate,
-      username: words[0],
-      message: words.slice(1).join(" "),
-    };
-  }
-  return null;
-}
-
-// 형식 1 이름 후보 업데이트
-function updateFormat1NameCandidate(
-  restAfterDate,
-  currentCandidate,
-  currentCount
-) {
-  const FORMAT1_SAMPLE_LIMIT = 5;
-
-  if (currentCount >= FORMAT1_SAMPLE_LIMIT) {
-    return { candidate: currentCandidate, count: currentCount };
   }
 
   const words = restAfterDate.split(/\s+/);
-  const newSample = words.slice(0, Math.min(4, words.length));
 
-  if (currentCandidate === null) {
-    // 첫 번째 샘플
-    return { candidate: newSample, count: 1 };
+  if (words.length === 0) {
+    return null;
   }
 
-  // 기존 후보와 비교하여 공통 부분만 남김
-  const refinedCandidate = [];
-  for (let i = 0; i < currentCandidate.length; i++) {
-    if (i < newSample.length && currentCandidate[i] === newSample[i]) {
-      refinedCandidate.push(currentCandidate[i]);
-    } else {
-      break;
+  // 임시 파싱 (첫 단어를 이름으로)
+  return {
+    isFormat1: true,
+    restAfterDate: restAfterDate,
+    username: words[0],
+    message: words.slice(1).join(" "),
+  };
+}
+
+// 형식 1 이름 패턴 분석 (빈도 기반)
+function analyzeFormat1NamePatterns(samples) {
+  const patternFrequency = new Map();
+
+  // 각 샘플에서 가능한 이름 길이를 1~4단어로 시도
+  for (const sample of samples) {
+    const words = sample.split(/\s+/);
+
+    // 1단어부터 4단어까지 모두 시도
+    for (let len = 1; len <= Math.min(4, words.length); len++) {
+      const pattern = words.slice(0, len).join(" ");
+
+      // 빈도 증가
+      patternFrequency.set(pattern, (patternFrequency.get(pattern) || 0) + 1);
     }
   }
 
-  return { candidate: refinedCandidate, count: currentCount + 1 };
-}
+  // 빈도순 정렬
+  const sortedPatterns = Array.from(patternFrequency.entries()).sort(
+    (a, b) => b[1] - a[1]
+  );
 
-// 형식 1 이름 재정제
-function refineFormat1Names(confirmedNameArray) {
-  const confirmedName = confirmedNameArray.join(" ");
-  const nameLength = confirmedNameArray.length;
+  console.log("[Format1] 패턴 빈도:", sortedPatterns);
 
-  for (let i = 0; i < AppState.txtData.length; i++) {
-    const data = AppState.txtData[i];
+  // 최소 2회 이상 등장하고, 상위 빈도를 가진 패턴 선택
+  const validPatterns = [];
+  const minFrequency = Math.max(2, Math.floor(samples.length * 0.3)); // 샘플의 30% 이상
 
-    // 임시로 첫 단어만 이름으로 저장된 경우 수정
-    if (
-      data.username !== confirmedName &&
-      data.username === confirmedNameArray[0]
-    ) {
-      const fullText = data.username + " " + data.message;
-      const words = fullText.split(/\s+/);
-
-      if (words.length >= nameLength) {
-        const possibleName = words.slice(0, nameLength).join(" ");
-        if (possibleName === confirmedName) {
-          AppState.txtData[i].username = confirmedName;
-          AppState.txtData[i].message = words.slice(nameLength).join(" ");
+  for (const [pattern, freq] of sortedPatterns) {
+    if (freq >= minFrequency) {
+      // 이미 선택된 패턴의 부분 문자열이 아닌 경우만 추가
+      const words = pattern.split(/\s+/);
+      const isSubset = validPatterns.some((existing) => {
+        const existingWords = existing.split(/\s+/);
+        // 더 긴 패턴이 이미 있는지 확인
+        if (existingWords.length > words.length) {
+          return existingWords.slice(0, words.length).join(" ") === pattern;
         }
+        return false;
+      });
+
+      if (!isSubset) {
+        validPatterns.push(pattern);
       }
     }
   }
+
+  // 가장 긴 것부터 반환 (긴 이름을 우선 매칭하기 위해)
+  return validPatterns.sort(
+    (a, b) => b.split(/\s+/).length - a.split(/\s+/).length
+  );
+}
+
+// 형식 1 메시지들을 확정된 패턴들로 재파싱
+function refineFormat1MessagesWithPatterns(namePatterns, format1Messages) {
+  if (!namePatterns || namePatterns.length === 0) {
+    console.log("[Format1] 확정된 패턴이 없습니다.");
+    return;
+  }
+
+  let refinedCount = 0;
+
+  for (const msgInfo of format1Messages) {
+    if (msgInfo.dataIndex === null || msgInfo.dataIndex === undefined) {
+      console.log("[Format1] 인덱스가 설정되지 않았습니다.");
+      continue;
+    }
+
+    // ✅ AppState.txtData에서 직접 가져오기
+    const messageObj = AppState.txtData[msgInfo.dataIndex];
+    if (!messageObj) {
+      console.log("[Format1] 메시지를 찾을 수 없습니다:", msgInfo.dataIndex);
+      continue;
+    }
+
+    const words = msgInfo.restAfterDate.split(/\s+/);
+    let matched = false;
+
+    // 가장 긴 패턴부터 시도 (이미 정렬되어 있음)
+    for (const pattern of namePatterns) {
+      const patternWords = pattern.split(/\s+/);
+
+      if (words.length >= patternWords.length) {
+        const possibleName = words.slice(0, patternWords.length).join(" ");
+
+        if (possibleName === pattern) {
+          // 메시지 객체 직접 수정
+          messageObj.username = pattern;
+          messageObj.message = words
+            .slice(patternWords.length)
+            .join(" ")
+            .trim();
+          refinedCount++;
+          matched = true;
+          console.log(
+            `[Format1] 수정 ${refinedCount}:`,
+            words[0],
+            "→",
+            pattern,
+            "(인덱스:",
+            msgInfo.dataIndex + ")"
+          );
+          break;
+        }
+      }
+    }
+
+    if (!matched) {
+      console.log(`[Format1] 매칭 실패:`, words.slice(0, 3).join(" ") + "...");
+    }
+  }
+
+  console.log(`[Format1] 총 ${refinedCount}개 메시지 이름 수정 완료`);
 }
 
 // 캐릭터 정보 최종 처리
