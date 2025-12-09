@@ -17,6 +17,7 @@ function populateInitialCharacterDropdowns() {
   // 기존 색상 입력 필드가 없으면 추가
   if (!document.getElementById("meBg_auto")) {
     const meColorDiv = document.createElement("div");
+    meColorDiv.className = "options-row";
     meColorDiv.style.display = "flex";
     meColorDiv.style.alignItems = "center";
     meColorDiv.style.gap = "5px";

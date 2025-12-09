@@ -324,12 +324,6 @@ button:hover {
   background: #f7f7f7;
 }
 
-@media screen and (max-width: 800px) {
-  .container {
-    flex-direction: column;
-  }
-}
-
 .container {
   display: flex;
   height: auto;
@@ -722,4 +716,105 @@ button:hover {
 
 .message-container.show-profile {
   margin-top: 15px;
+}
+
+/* 모바일 대응 */
+@media (max-width: 1100px) {
+  .container {
+    flex-direction: column;
+    gap: 30px;
+    padding: 10px;
+    align-items: center;
+  }
+
+  .left-panel,
+  .right-panel {
+    max-width: 100%;
+    min-width: unset;
+  }
+}
+
+/* 더 작은 화면 */
+@media (max-width: 600px) {
+  body {
+    padding: 10px;
+    background-size: cover;
+  }
+
+  .container {
+    flex-direction: column;
+    gap: 30px;
+    padding: 10px;
+    align-items: center;
+  }
+
+  .left-panel,
+  .right-panel {
+    width: 100%;
+    min-width: unset;
+    align-items: center;
+  }
+
+  .section-container {
+    min-width: unset;
+    width: 80%;
+    padding: 12px;
+  }
+
+  .color-settings label {
+    font-size: 11px;
+    word-break: keep-all;
+  }
+
+  .speech-bubble {
+    max-width: 90%;
+    padding: 12px 15px;
+    font-size: 14px;
+  }
+
+  h3 {
+    font-size: 18px;
+  }
+
+  textarea {
+    font-size: 13px;
+  }
+
+  .style-row {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-left: 30px;
+  }
+
+  #preview {
+    max-height: 800px;
+  }
+
+  .character-selection {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "a"
+      "b"
+      "c";
+  }
+
+  #profile_meCharacter_auto {
+    margin-right: 155px;
+  }
+
+  .options-row {
+    transform: translateX(-195px);
+  }
+
+  #meCharacterContainer {
+    display: flex !important;
+  }
+
+  #meCharacterContainer label {
+    margin-left: 45px;
+  }
+
+  .character-selection select {
+    width: 100%;
+  }
 }
