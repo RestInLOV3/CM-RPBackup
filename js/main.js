@@ -89,21 +89,22 @@ document.addEventListener("DOMContentLoaded", function () {
     const element = document.getElementById(id);
     if (element) {
       element.addEventListener("input", () => {
-        Array.from(document.getElementById("preview").children).forEach(
-          (div) => {
-            // 수동 입력 말풍선만 업데이트
-            if (div.dataset.source !== "manual") return;
+        const preview = document.getElementById("preview");
+        const containers = preview.querySelectorAll(".message-container");
 
-            if (div.classList.contains("speech-bubble-me")) {
-              div.style.backgroundColor = document.getElementById("meBg").value;
-              div.style.color = document.getElementById("meColor").value;
-            } else if (div.classList.contains("speech-bubble-you")) {
-              div.style.backgroundColor =
-                document.getElementById("youBg").value;
-              div.style.color = document.getElementById("youColor").value;
-            }
+        containers.forEach((container) => {
+          const bubble = container.querySelector(".speech-bubble");
+          if (!bubble || bubble.dataset.source !== "manual") return;
+
+          if (bubble.classList.contains("speech-bubble-me")) {
+            bubble.style.backgroundColor = document.getElementById("meBg").value;
+            bubble.style.color = document.getElementById("meColor").value;
+          } else if (bubble.classList.contains("speech-bubble-you")) {
+            bubble.style.backgroundColor = document.getElementById("youBg").value;
+            bubble.style.color = document.getElementById("youColor").value;
           }
-        );
+        });
+
         updateAfterStyles();
         updateOutputFromPreview();
 
