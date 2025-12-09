@@ -215,21 +215,16 @@ function generateFromXLSX() {
     // 두 캐릭터 중 하나인지 확인
     if (!pairCharacters.includes(name)) return;
 
-    // 'ㄴ'으로 시작하면 reply
     if (content.startsWith("ㄴ")) {
-      // 'ㄴ' 다음 문자열에서 이름 목록에 있는 이름 찾기
       const contentAfterMarker = content.substring(1); // 'ㄴ' 제거
-
       let targetName = null;
-      let actualContent = content;
+      let actualContent = contentAfterMarker;
 
       // 이름 목록에서 가장 긴 매칭부터 시도
       const sortedNames = [...allNames].sort((a, b) => b.length - a.length);
-
       for (const candidateName of sortedNames) {
         if (contentAfterMarker.startsWith(candidateName)) {
           targetName = candidateName;
-          // 이름 이후의 실제 내용 추출 (이름 다음의 공백 포함 제거)
           actualContent = contentAfterMarker
             .substring(candidateName.length)
             .trim();
@@ -237,7 +232,12 @@ function generateFromXLSX() {
         }
       }
 
-      // 현재 대화에 reply 추가
+      // targetName 없으면 현재 대화의 원 발화자를 기본으로
+      if (!targetName && currentConversation) {
+        targetName = currentConversation.name;
+        actualContent = contentAfterMarker.trim(); // 이름 없이 바로 내용
+      }
+
       if (
         currentConversation &&
         targetName &&
