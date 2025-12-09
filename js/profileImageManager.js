@@ -369,4 +369,59 @@ function initProfileImages() {
       console.error("프로필 색상 불러오기 실패:", e);
     }
   }
+
+  // preview의 모든 메시지에 프로필 정보 적용
+  applyProfileToAllMessages();
+}
+
+// preview의 모든 메시지에 프로필 정보 적용
+function applyProfileToAllMessages() {
+  const preview = document.getElementById("preview");
+  if (!preview) return;
+
+  const containers = preview.querySelectorAll(".message-container");
+  containers.forEach((container) => {
+    const characterId = container.dataset.characterId;
+    if (!characterId) return;
+
+    const profileImage = container.querySelector(".profile-image");
+    if (!profileImage) return;
+
+    // 이미지가 있으면 이미지 적용
+    if (AppState.profileImages[characterId]) {
+      const imageUrl = AppState.profileImages[characterId];
+      if (profileImage.tagName === "IMG") {
+        profileImage.src = imageUrl;
+        profileImage.style.backgroundColor = "";
+      } else {
+        // div를 img로 교체
+        const img = document.createElement("img");
+        img.className = "profile-image";
+        img.src = imageUrl;
+        img.alt = container.dataset.characterName;
+        img.style.backgroundColor = "";
+        profileImage.parentNode.replaceChild(img, profileImage);
+      }
+    }
+    // 이미지가 없고 색상이 있으면 색상 적용
+    else if (AppState.profileColors && AppState.profileColors[characterId]) {
+      const color = AppState.profileColors[characterId];
+      if (profileImage.tagName === "IMG") {
+        // img를 div로 교체
+        const div = document.createElement("div");
+        div.className = "profile-image";
+        div.style.backgroundColor = color;
+        profileImage.parentNode.replaceChild(div, profileImage);
+      } else {
+        // 이미 div인 경우
+        profileImage.style.backgroundColor = color;
+        profileImage.style.backgroundImage = "";
+      }
+    }
+  });
+
+  // HTML 출력 업데이트
+  if (typeof updateOutputFromPreview === "function") {
+    updateOutputFromPreview();
+  }
 }

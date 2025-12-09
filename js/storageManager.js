@@ -608,6 +608,11 @@ function loadFileData() {
           }
         }
 
+        // preview의 모든 메시지에 프로필 정보 적용
+        if (typeof applyProfileToAllMessages === "function") {
+          applyProfileToAllMessages();
+        }
+
         // 스타일 업데이트 (말풍선 꼬리 등) - 색상 복원 직후 바로 적용
         console.log("[loadFileData] updateAfterStyles 호출 (1차 - 즉시)");
         if (typeof updateAfterStyles === "function") {

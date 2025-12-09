@@ -9,6 +9,7 @@ const AppState = {
   maxCharacters: 0, // 최대 캐릭터 수
   youColors: {}, // YOU별 색상 저장 { youCharacter: {bg: '#...', color: '#...'}, ... }
   profileImages: {}, // 프로필 사진 저장 { meCharacter_auto: 'base64...', youCharacter: 'base64...', ... }
+  profileColors: {}, // 프로필 색상 저장 { meCharacter_auto: '#...', youCharacter: '#...', ... }
 };
 
 // 스타일 템플릿

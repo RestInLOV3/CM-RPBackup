@@ -116,6 +116,7 @@ function createMessageContainer(bubbleElement, characterName, characterId, isMe)
 
   // 프로필 이미지가 있는지 확인
   const profileImage = AppState.profileImages[characterId];
+  const profileColor = AppState.profileColors && AppState.profileColors[characterId];
 
   // 프로필 이미지
   if (profileImage) {
@@ -123,12 +124,13 @@ function createMessageContainer(bubbleElement, characterName, characterId, isMe)
     img.className = 'profile-image';
     img.src = profileImage;
     img.alt = characterName;
+    img.style.backgroundColor = ''; // 이미지 설정 시 배경색 제거
     container.appendChild(img);
   } else {
-    // 기본 프로필 원형
+    // 프로필 색상 또는 기본 프로필 원형
     const defaultProfile = document.createElement('div');
     defaultProfile.className = 'profile-image';
-    defaultProfile.style.backgroundColor = '#e0e0e0';
+    defaultProfile.style.backgroundColor = profileColor || '#e0e0e0';
     container.appendChild(defaultProfile);
   }
 
