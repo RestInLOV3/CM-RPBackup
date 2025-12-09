@@ -267,6 +267,7 @@ function updateProfileImageUI(targetId, imageUrl) {
     profileCircle.style.backgroundImage = `url(${imageUrl})`;
     profileCircle.style.backgroundSize = "cover";
     profileCircle.style.backgroundPosition = "center";
+    profileCircle.style.backgroundColor = ""; // 이미지 설정 시 배경색 제거
   }
 
   // 미리보기의 프로필 이미지도 업데이트
@@ -285,12 +286,14 @@ function updatePreviewProfileImages(targetId, imageUrl) {
       if (profileImage) {
         if (profileImage.tagName === "IMG") {
           profileImage.src = imageUrl;
+          profileImage.style.backgroundColor = ""; // 이미지 설정 시 배경색 제거
         } else {
           // div를 img로 교체
           const img = document.createElement("img");
           img.className = "profile-image";
           img.src = imageUrl;
           img.alt = container.dataset.characterName;
+          img.style.backgroundColor = ""; // 배경색 제거
           profileImage.parentNode.replaceChild(img, profileImage);
         }
       }
@@ -336,7 +339,7 @@ function createProfileCircle(targetId) {
 // 프로필 사진 초기화
 function initProfileImages() {
   // localStorage에서 이미지 불러오기
-  const savedImages = localStorage.getItem("profileImages");
+  const savedImages = localStorage.getItem("chatBackup_profileImages");
   if (savedImages) {
     try {
       AppState.profileImages = JSON.parse(savedImages);
@@ -351,7 +354,7 @@ function initProfileImages() {
   }
 
   // localStorage에서 색상 불러오기
-  const savedColors = localStorage.getItem("profileColors");
+  const savedColors = localStorage.getItem("chatBackup_profileColors");
   if (savedColors) {
     try {
       AppState.profileColors = JSON.parse(savedColors);
