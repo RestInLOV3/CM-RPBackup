@@ -718,4 +718,78 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
+
+  // 미리보기 초기화 버튼에 이벤트 리스너 추가
+  const previewResetBtn = document.getElementById("preview-reset");
+  if (previewResetBtn) {
+    previewResetBtn.addEventListener("click", () => {
+      if (confirm("미리보기와 파일 데이터를 초기화하시겠습니까?")) {
+        // 1. 미리보기 초기화
+        const preview = document.getElementById("preview");
+        if (preview) {
+          preview.innerHTML = "";
+        }
+
+        // 2. 미리보기 localStorage 삭제
+        localStorage.removeItem(STORAGE_KEYS.PREVIEW_HTML);
+
+        // 3. 파일 데이터 초기화
+        AppState.currentFileType = null;
+        AppState.csvData = [];
+        AppState.xlsxData = [];
+        AppState.txtData = [];
+        AppState.conversationPairsMap = {};
+        AppState.youCount = 1;
+        AppState.youColors = {};
+
+        // 4. 파일 입력 초기화
+        const fileInput = document.getElementById("dataFile");
+        if (fileInput) {
+          fileInput.value = "";
+        }
+
+        // 5. 캐릭터 선택 섹션 숨기기
+        const characterSelection = document.querySelector(".character-selection");
+        if (characterSelection) {
+          characterSelection.style.display = "none";
+        }
+
+        // 6. ME 컨테이너 초기화 (자동 생성 색상 제거)
+        const meContainer = document.getElementById("meCharacterContainer");
+        if (meContainer) {
+          meContainer.style.display = "inline";
+          // ME 드롭다운 초기화
+          const meSelect = document.getElementById("meCharacter");
+          if (meSelect) {
+            meSelect.innerHTML = '<option value="">선택하세요</option>';
+            meSelect.value = "";
+          }
+          // 자동 생성 색상 입력 필드 제거
+          const optionsRow = meContainer.querySelector(".options-row");
+          if (optionsRow) {
+            optionsRow.remove();
+          }
+        }
+
+        // 7. YOU 컨테이너 초기화
+        const youContainer = document.getElementById("youCharactersContainer");
+        if (youContainer) {
+          youContainer.style.display = "inline";
+          youContainer.innerHTML = "";
+        }
+
+        // 8. 파일 데이터 localStorage 삭제
+        localStorage.removeItem(STORAGE_KEYS.FILE_DATA);
+        localStorage.removeItem(STORAGE_KEYS.PROFILE_IMAGES);
+        localStorage.removeItem(STORAGE_KEYS.PROFILE_COLORS);
+
+        // 9. HTML 출력 초기화
+        if (typeof updateOutputFromPreview === "function") {
+          updateOutputFromPreview();
+        }
+
+        alert("미리보기와 파일 데이터가 초기화되었습니다.");
+      }
+    });
+  }
 });

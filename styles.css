@@ -241,6 +241,13 @@ button:hover {
   margin-bottom: 4px;
 }
 
+.section-container.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
 #preview {
   min-height: 200px;
   max-height: 1100px;
@@ -263,6 +270,19 @@ button:hover {
 
 #preview::-webkit-scrollbar-button {
   display: none;
+}
+
+#preview-reset {
+  width: 110px;
+  height: 35px;
+  margin-top: 3px;
+  font-size: 13px;
+  padding: 0;
+  padding-top: 2px;
+}
+
+.body-container {
+  width: 90%;
 }
 
 .color-settings {
