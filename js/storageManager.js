@@ -793,7 +793,7 @@ document.addEventListener("DOMContentLoaded", function () {
           updateOutputFromPreview();
         }
 
-        alert("미리보기와 파일 데이터가 초기화되었습니다.");
+        alert("미리보기가 초기화되었습니다.");
       }
     });
   }
