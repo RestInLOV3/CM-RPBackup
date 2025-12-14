@@ -596,7 +596,10 @@ function loadFileData() {
             AppState.profileColors = JSON.parse(savedColors);
             // UI 업데이트 (이미지가 없는 경우만)
             for (const targetId in AppState.profileColors) {
-              if (!AppState.profileImages[targetId] && typeof updateProfileColorUI === "function") {
+              if (
+                !AppState.profileImages[targetId] &&
+                typeof updateProfileColorUI === "function"
+              ) {
                 updateProfileColorUI(
                   targetId,
                   AppState.profileColors[targetId]
@@ -723,7 +726,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const previewResetBtn = document.getElementById("preview-reset");
   if (previewResetBtn) {
     previewResetBtn.addEventListener("click", () => {
-      if (confirm("미리보기와 파일 데이터를 초기화하시겠습니까?")) {
+      if (confirm("미리보기를 초기화하시겠습니까?")) {
         // 1. 미리보기 초기화
         const preview = document.getElementById("preview");
         if (preview) {
@@ -749,7 +752,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // 5. 캐릭터 선택 섹션 숨기기
-        const characterSelection = document.querySelector(".character-selection");
+        const characterSelection = document.querySelector(
+          ".character-selection"
+        );
         if (characterSelection) {
           characterSelection.style.display = "none";
         }

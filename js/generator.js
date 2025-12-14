@@ -242,6 +242,27 @@ function generateFromData() {
     return;
   }
 
+  // 설정에서 설정된 색상을 자동 생성용 input에 복사
+  const meBg = document.getElementById("meBg");
+  const meColor = document.getElementById("meColor");
+  const meBgAuto = document.getElementById("meBg_auto");
+  const meColorAuto = document.getElementById("meColor_auto");
+
+  if (meBg && meColor && meBgAuto && meColorAuto) {
+    meBgAuto.value = meBg.value;
+    meColorAuto.value = meColor.value;
+  }
+
+  const youBg = document.getElementById("youBg");
+  const youColor = document.getElementById("youColor");
+  const youBgAuto = document.getElementById("youBg_youCharacter");
+  const youColorAuto = document.getElementById("youColor_youCharacter");
+
+  if (youBg && youColor && youBgAuto && youColorAuto) {
+    youBgAuto.value = youBg.value;
+    youColorAuto.value = youColor.value;
+  }
+
   if (AppState.currentFileType === "csv") {
     generateFromCSV();
   } else if (AppState.currentFileType === "xlsx") {
@@ -325,6 +346,11 @@ function generateFromCSV() {
   // 연속 메시지 감지 및 프로필 표시 업데이트
   updateMessageContainers();
 
+  // 전역 스타일 적용 (폰트 크기, 자간, 행간, 그림자 등)
+  if (typeof applyGlobalStylesToPreview === "function") {
+    applyGlobalStylesToPreview();
+  }
+
   updateAfterStyles();
   updateOutputFromPreview();
 
@@ -407,6 +433,11 @@ function generateFromTXT() {
 
   // 연속 메시지 감지 및 프로필 표시 업데이트
   updateMessageContainers();
+
+  // 전역 스타일 적용 (폰트 크기, 자간, 행간, 그림자 등)
+  if (typeof applyGlobalStylesToPreview === "function") {
+    applyGlobalStylesToPreview();
+  }
 
   updateAfterStyles();
   updateOutputFromPreview();
@@ -587,6 +618,11 @@ function generateFromXLSX() {
 
   // 연속 메시지 감지 및 프로필 표시 업데이트
   updateMessageContainers();
+
+  // 전역 스타일 적용 (폰트 크기, 자간, 행간, 그림자 등)
+  if (typeof applyGlobalStylesToPreview === "function") {
+    applyGlobalStylesToPreview();
+  }
 
   updateAfterStyles();
   updateOutputFromPreview();
