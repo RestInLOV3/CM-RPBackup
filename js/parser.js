@@ -280,33 +280,6 @@ function parseTXT(text) {
     }
   }
 
-  // 마지막 메시지 저장
-  if (currentMessage && currentMessage.username && currentMessage.message) {
-    const messageObj = {
-      username: currentMessage.username,
-      message: currentMessage.message.trim(),
-    };
-    AppState.txtData.push(messageObj);
-
-    // 마지막 메시지가 형식1이었다면 참조 업데이트
-    if (currentMessage.isFormat1) {
-      const lastFormat1 = format1Messages[format1Messages.length - 1];
-      if (lastFormat1) {
-        lastFormat1.dataIndex = AppState.txtData.length - 1; // 방금 push된 인덱스
-      }
-    }
-  }
-
-  // 형식 1 이름 패턴 분석
-  if (format1Samples.length > 0) {
-    const namePatterns = analyzeFormat1NamePatterns(format1Samples);
-    console.log("[Format1] 확정된 이름 패턴들:", namePatterns);
-
-    if (namePatterns.length > 0) {
-      refineFormat1MessagesWithPatterns(namePatterns, format1Messages);
-    }
-  }
-
   // 캐릭터 이름 추출 및 매핑 생성
   finalizeCharacters();
 
